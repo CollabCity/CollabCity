@@ -1,0 +1,25 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "dcbCIn",
+      "name": "Daniel Brandão",
+      "avatar_url": "https://avatars.githubusercontent.com/u/48742131?v=4",
+      "profile": "https://github.com/dcbCIn",
+      "contributions": [
+        "doc",
+        "code"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "CollabCity",
+  "projectOwner": "CollabCity",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true
+}
