@@ -5,6 +5,11 @@
 
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
+## Description
+CollabCity is a platform to connect those who have with those who need. It is an Open-source project maintained by the people for the people. CollabCity connects people and organizations who need skills, talent or resources with those who can provide them for free, by trade or a fee. Share your skills, upcycle your gently used items or pitch in to help someone out! With CollabCity, you can post requests for skills, resources or volunteer hours to those in your community. 
+
+Currently, the scope of this project is being determined by contributors. Join the CollabCity project to help us shape what it can become. 
+
 ## Getting Started
 
 First, run the development server:
