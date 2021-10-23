@@ -1,13 +1,20 @@
-# CollabCity
+# CollabCity 🏙️
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
-## Getting Started
+## Description 📰
+CollabCity is a platform to connect those who have with those who need. It is an Open-source project maintained by the people for the people. CollabCity connects people and organizations who need skills, talent or resources with those who can provide them for free, by trade or a fee. Share your skills, upcycle your gently used items or pitch in to help someone out! With CollabCity, you can post requests for skills, resources or volunteer hours to those in your community. 
 
-First, run the development server:
+Currently, the scope of this project is being determined by contributors. Right now, we're imagining a system where you can log in and post a request for help, items or skills or search for those whom you might be able to help. Searching could be restricted to a city name or region or potentially even a radius around your location. Join the CollabCity project to help us shape what it will become! Spread the word!
+
+## Getting Started 🏗️
+
+To contribute, please review the Contributing.md and review the issues list for issues you can help with. 
+
+When you're ready to contribue, fork and clone this repo. From there, you'll need to run the development server:
 
 ```bash
 npm run dev
@@ -23,7 +30,7 @@ You can start editing the page by modifying `pages/index.tsx`. The page auto-upd
 
 The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
 
-## Learn More
+## Learn More 📚
 
 To learn more about Next.js, take a look at the following resources:
 
@@ -32,7 +39,7 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+## Deploy on Vercel 🛩️
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
