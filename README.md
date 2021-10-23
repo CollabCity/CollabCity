@@ -48,7 +48,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <table>
   <tr>
     <td align="center"><a href="https://github.com/dcbCIn"><img src="https://avatars.githubusercontent.com/u/48742131?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Daniel Brandão</b></sub></a><br /><a href="https://github.com/CollabCity/CollabCity/commits?author=dcbCIn" title="Documentation">📖</a> <a href="https://github.com/CollabCity/CollabCity/commits?author=dcbCIn" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/Atraisce"><img src="https://avatars.githubusercontent.com/u/76713277?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Atraisce</b></sub></a><br /><a href="#design-Atraisce" title="Design">🎨</a></td>
+    <td align="center"><a href="https://github.com/Atraisce"><img src="https://avatars.githubusercontent.com/u/76713277?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Atraisce</b></sub></a><br /><a href="#design-Atraisce" title="Design">🎨</a> <a href="https://github.com/CollabCity/CollabCity/commits?author=Atraisce" title="Documentation">📖</a></td>
   </tr>
 </table>
 
