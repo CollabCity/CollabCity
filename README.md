@@ -12,7 +12,7 @@ Currently, the scope of this project is being determined by contributors. Right 
 
 ## Getting Started 🏗️
 
-To contribute, please review the Contributing.md and review the issues list for issues you can help with. 
+To contribute, please review the [CONTRIBUTING.md](./CONTRIBUTING.md) and review the issues list for issues you can help with. 
 
 When you're ready to contribue, fork and clone this repo. From there, you'll need to run the development server:
 
@@ -39,11 +39,11 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
 
-## Deploy on Vercel 🛩️
+## Deploy on Netlify 🛩️
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The site is currently being deployed on [Netlify Platform](https://www.netlify.com/) at [https://collabcity.netlify.app/](https://collabcity.netlify.app/).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+Check out [Experience Next.js on Netlify](https://www.netlify.com/with/nextjs/) and [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
 
 ## Contributors ✨
 
