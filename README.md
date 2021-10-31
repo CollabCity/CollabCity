@@ -1,9 +1,16 @@
-# CollabCity 🏙️
-<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+<p align="center">
+  <a href="https://collabcity.netlify.app" rel="noopener" target="_blank"><img width="150" src="./Logo/CollabCityLogo.svg" alt="CollabCity logo"></a></p>
+</p>
+
+<h1 align="center">CollabCity</h1>
+
+<div align="center">
+
+[![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/CollabCity/CollabCity/blob/main/LICENSE) <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/all_contributors-4-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+</div>
 
 ## Description 📰
 CollabCity is a platform to connect those who have with those who need. It is an Open-source project maintained by the people for the people. CollabCity connects people and organizations who need skills, talent or resources with those who can provide them for free, by trade or a fee. Share your skills, upcycle your gently used items or pitch in to help someone out! With CollabCity, you can post requests for skills, resources or volunteer hours to those in your community. 
@@ -11,6 +18,8 @@ CollabCity is a platform to connect those who have with those who need. It is an
 Currently, the scope of this project is being determined by contributors. Right now, we're imagining a system where you can log in and post a request for help, items or skills or search for those whom you might be able to help. Searching could be restricted to a city name or region or potentially even a radius around your location. Join the CollabCity project to help us shape what it will become! Spread the word!
 
 ## Getting Started 🏗️
+
+This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 To contribute, please review the [CONTRIBUTING.md](./CONTRIBUTING.md) and review the issues list for issues you can help with. 
 
@@ -29,6 +38,8 @@ You can start editing the page by modifying `pages/index.tsx`. The page auto-upd
 [API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
 
 The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+
+Available Color Palettes could be found in [Color Palette](./docs/Color%20Palette/readme.md)
 
 ## Learn More 📚
 
