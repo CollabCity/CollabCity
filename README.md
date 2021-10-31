@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://collabcity.netlify.app" rel="noopener" target="_blank"><img width="150" src="./logo/CollabCityLogo.svg" alt="CollabCity logo"></a></p>
+  <a href="https://collabcity.netlify.app" rel="noopener" target="_blank"><img width="150" src="./Logo/CollabCityLogo.svg" alt="CollabCity logo"></a></p>
 </p>
 
 <h1 align="center">CollabCity</h1>

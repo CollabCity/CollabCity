@@ -1,4 +1,5 @@
 # Bright
+![Bright](Bright.PNG)
 <table>
   <tbody>
     <tr>
@@ -28,7 +29,8 @@
   </tbody>
 </table>
 
-# Colorful
+# Colourful
+![Colourful](Colourful.PNG)
 <table>
   <tbody>
     <tr>
@@ -59,6 +61,7 @@
 </table>
 
 # Dark
+![Dark](Dark.PNG)
 <table>
   <tbody>
     <tr>
@@ -89,6 +92,7 @@
 </table>
 
 # Deep
+![Deep](Deep.PNG)
 <table>
   <tbody>
     <tr>
@@ -119,6 +123,7 @@
 </table>
 
 # Muted
+![Muted](Muted.PNG)
 <table>
   <tbody>
     <tr>
