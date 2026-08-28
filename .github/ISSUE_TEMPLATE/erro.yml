@@ -1,0 +1,53 @@
+name: Relatar um erro
+description: Algo não funciona como deveria.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Obrigado por relatar. Antes de continuar, veja se já existe uma issue parecida.
+
+  - type: textarea
+    id: descricao
+    attributes:
+      label: O que acontece
+      description: Descreva o comportamento observado.
+    validations:
+      required: true
+
+  - type: textarea
+    id: esperado
+    attributes:
+      label: O que você esperava que acontecesse
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproducao
+    attributes:
+      label: Como reproduzir
+      placeholder: |
+        1. Acesse /anuncios
+        2. Ative a localização
+        3. Escolha o raio de 5 km
+        4. ...
+    validations:
+      required: true
+
+  - type: input
+    id: ambiente
+    attributes:
+      label: Ambiente
+      description: Navegador, sistema operacional e, se for local, a versão do Node.
+      placeholder: "Firefox 140, Ubuntu 24.04, Node 24"
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Mensagens de erro
+      description: Saída do terminal ou do console do navegador, se houver.
+      render: shell
+    validations:
+      required: false

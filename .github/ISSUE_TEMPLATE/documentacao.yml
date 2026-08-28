@@ -1,0 +1,28 @@
+name: Corrigir ou melhorar a documentação
+description: Algo está errado, faltando ou confuso na documentação.
+labels: ["documentation"]
+body:
+  - type: input
+    id: local
+    attributes:
+      label: Onde
+      description: Caminho do arquivo ou link da página.
+      placeholder: "docs/getting-started.md"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problema
+    attributes:
+      label: Qual é o problema
+      description: O que está errado, ausente ou difícil de entender.
+    validations:
+      required: true
+
+  - type: textarea
+    id: sugestao
+    attributes:
+      label: Sugestão
+      description: Se você já tem uma redação em mente, escreva aqui.
+    validations:
+      required: false

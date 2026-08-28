@@ -1,0 +1,110 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DATABASE_URL: postgresql://collabcity:collabcity@localhost:5432/collabcity
+  BETTER_AUTH_SECRET: segredo-de-integracao-continua-com-32-caracteres
+  BETTER_AUTH_URL: http://localhost:3000
+  NEXT_PUBLIC_APP_URL: http://localhost:3000
+
+jobs:
+  qualidade:
+    name: Lint, tipos e testes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Verificação de tipos
+        run: pnpm typecheck
+
+      - name: Testes de unidade
+        run: pnpm test
+
+  build:
+    name: Build de produção
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # O build não acessa o banco. Validar o ambiente aqui obrigaria a injetar
+      # segredos reais só para compilar.
+      - name: Build
+        run: pnpm build
+        env:
+          SKIP_ENV_VALIDATION: "true"
+
+  e2e:
+    name: Testes de ponta a ponta
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        # Build multi-arquitetura do PostGIS; a imagem postgis/postgis é só amd64.
+        image: imresamu/postgis:17-3.5-alpine
+        env:
+          POSTGRES_USER: collabcity
+          POSTGRES_PASSWORD: collabcity
+          POSTGRES_DB: collabcity
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U collabcity -d collabcity"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Instalar navegador
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Migrar e popular o banco
+        run: |
+          pnpm exec tsx src/db/migrate.ts
+          pnpm exec tsx src/db/seed.ts
+
+      - name: Build
+        run: pnpm build
+
+      - name: Testes de ponta a ponta
+        run: pnpm exec playwright test --project=chromium
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

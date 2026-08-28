@@ -1,0 +1,40 @@
+name: Sugerir uma funcionalidade
+description: Uma ideia para o projeto.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Vale conferir o [roteiro](https://github.com/CollabCity/CollabCity/blob/main/docs/roadmap.md):
+        a ideia pode já estar registrada, às vezes com o motivo de ainda não ter sido feita.
+
+  - type: textarea
+    id: problema
+    attributes:
+      label: Que problema isso resolve
+      description: Descreva a situação de quem usa a plataforma, não a solução.
+      placeholder: "Quando alguém procura ajuda em outro bairro, precisa digitar as coordenadas à mão porque..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposta
+    attributes:
+      label: O que você propõe
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternativas
+    attributes:
+      label: Alternativas que você considerou
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: participacao
+    attributes:
+      label: Participação
+      options:
+        - label: Tenho interesse em implementar isso
+          required: false
