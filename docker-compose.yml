@@ -1,0 +1,23 @@
+services:
+  db:
+    # Build multi-arquitetura do PostGIS (inclui arm64, necessária para Apple Silicon).
+    # A imagem postgis/postgis publica apenas amd64.
+    image: imresamu/postgis:17-3.5-alpine
+    container_name: collabcity-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: collabcity
+      POSTGRES_PASSWORD: collabcity
+      POSTGRES_DB: collabcity
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U collabcity -d collabcity"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  db-data:
