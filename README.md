@@ -1,64 +1,150 @@
 <p align="center">
-  <a href="https://collabcity.netlify.app" rel="noopener" target="_blank"><img width="150" src="./Logo/CollabCityLogo.svg" alt="CollabCity logo"></a></p>
+  <img width="150" src="./Logo/CollabCityLogo.svg" alt="CollabCity">
 </p>
 
 <h1 align="center">CollabCity</h1>
 
+<p align="center">
+  Conecte quem precisa de ajuda com quem tem habilidades, recursos ou tempo para oferecer.
+</p>
+
 <div align="center">
 
-[![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/CollabCity/CollabCity/blob/main/LICENSE) <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-4-orange.svg?style=flat-square)](#contributors-)
-<!-- ALL-CONTRIBUTORS-BADGE:END -->
+[![license](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black.svg)](https://nextjs.org)
+[![PostGIS](https://img.shields.io/badge/PostgreSQL-17%20%2B%20PostGIS-336791.svg)](https://postgis.net)
 
 </div>
 
-## Description 📰
-CollabCity is a platform to connect those who have with those who need. It is an Open-source project maintained by the people for the people. CollabCity connects people and organizations who need skills, talent or resources with those who can provide them for free, by trade or a fee. Share your skills, upcycle your gently used items or pitch in to help someone out! With CollabCity, you can post requests for skills, resources or volunteer hours to those in your community. 
+---
 
-Currently, the scope of this project is being determined by contributors. Right now, we're imagining a system where you can log in and post a request for help, items or skills or search for those whom you might be able to help. Searching could be restricted to a city name or region or potentially even a radius around your location. Join the CollabCity project to help us shape what it will become! Spread the word!
+## O que é
 
-## Getting Started 🏗️
+CollabCity é uma plataforma open source de ajuda mútua com recorte territorial. Qualquer pessoa
+pode publicar um **pedido** ("preciso de um notebook usado para as aulas de reforço") ou uma
+**oferta** ("conserto móveis de madeira em troca de aulas de inglês") e encontrar a contraparte
+por perto.
 
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+Três eixos organizam tudo o que circula na plataforma:
 
-To contribute, please review the [CONTRIBUTING.md](./CONTRIBUTING.md) and review the issues list for issues you can help with. 
+| Eixo | Valores | O que responde |
+| --- | --- | --- |
+| Intenção | pedido, oferta | A pessoa precisa ou oferece? |
+| Natureza | habilidade, item, voluntariado | O que exatamente circula? |
+| Forma de troca | doação, troca, pago | Como a transação acontece? |
 
-When you're ready to contribue, fork and clone this repo. From there, you'll need to run the development server:
+A busca cruza esses eixos com **proximidade geográfica real** — não com o nome da cidade digitado
+à mão. Cada anúncio carrega um ponto geográfico indexado no PostGIS, e o filtro por raio é
+resolvido pelo banco com um índice GiST.
+
+## Stack
+
+| Camada | Escolha | Por quê |
+| --- | --- | --- |
+| Framework | [Next.js 16](https://nextjs.org) (App Router) + React 19 | Server Components e Server Actions eliminam a camada de API para o próprio front |
+| Linguagem | TypeScript 5.9 em modo estrito | `noUncheckedIndexedAccess` e `verbatimModuleSyntax` ligados |
+| Banco | PostgreSQL 17 + [PostGIS](https://postgis.net) 3.5 | Busca por raio com índice espacial e busca textual com stemming em português |
+| ORM | [Drizzle](https://orm.drizzle.team) | Schema em TypeScript, migrações versionadas, SQL bruto quando o PostGIS exige |
+| Autenticação | [Better Auth](https://better-auth.com) | Open source, roda no próprio banco, sem serviço externo |
+| Estilo | [Tailwind CSS 4](https://tailwindcss.com) + [Radix UI](https://radix-ui.com) | Tokens em OKLCH derivados da paleta do projeto; primitivas acessíveis |
+| Validação | [Zod 4](https://zod.dev) | Um schema serve ao formulário, à Server Action e ao tipo |
+| Qualidade | [Biome 2](https://biomejs.dev) | Lint e formatação em uma ferramenta só |
+| Testes | [Vitest 4](https://vitest.dev) + [Playwright](https://playwright.dev) | Unidade e ponta a ponta |
+
+Cada escolha está registrada, com alternativas consideradas e consequências, em
+[`docs/decisions/`](./docs/decisions/).
+
+## Começando
+
+Pré-requisitos: **Node 22+**, **pnpm 10+** e **Docker** (para o Postgres local).
 
 ```bash
-npm run dev
-# or
-yarn dev
+git clone https://github.com/CollabCity/CollabCity.git
+cd CollabCity
+pnpm install
+
+cp .env.example .env.local
+# Gere o segredo de sessão e cole em BETTER_AUTH_SECRET:
+openssl rand -base64 32
+
+pnpm db:up        # sobe PostgreSQL 17 + PostGIS em container
+pnpm db:migrate   # habilita a extensão e aplica as migrações
+pnpm db:seed      # popula categorias, contas e anúncios de demonstração
+
+pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abra <http://localhost:3000>. O seed cria contas de demonstração — entre com
+`ana@exemplo.test` e a senha `collabcity-demo-2026`.
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+O passo a passo completo, incluindo solução de problemas, está em
+[`docs/getting-started.md`](./docs/getting-started.md).
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+## Comandos
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+| Comando | O que faz |
+| --- | --- |
+| `pnpm dev` | Servidor de desenvolvimento com Turbopack |
+| `pnpm build` / `pnpm start` | Build de produção e execução |
+| `pnpm check` | Lint, verificação de tipos e testes — o mesmo que a CI roda |
+| `pnpm lint` / `pnpm lint:fix` | Biome, com e sem correção automática |
+| `pnpm typecheck` | `tsc --noEmit` |
+| `pnpm test` / `pnpm test:watch` | Testes de unidade e de componente |
+| `pnpm test:e2e` | Testes de ponta a ponta com Playwright |
+| `pnpm db:up` / `pnpm db:down` | Sobe e derruba o banco local |
+| `pnpm db:generate` | Gera uma migração a partir do schema |
+| `pnpm db:migrate` / `pnpm db:seed` | Aplica migrações e popula o banco |
+| `pnpm db:reset` | Derruba, recria, migra e popula do zero |
+| `pnpm db:studio` | Abre o Drizzle Studio |
 
-Available Color Palettes could be found in [Color Palette](./docs/Color%20Palette/readme.md)
+## Estrutura
 
-## Learn More 📚
+```
+src/
+├── app/                 Rotas do App Router (URLs em português)
+│   ├── anuncios/        Busca, detalhe, criação e edição
+│   ├── painel/          Área autenticada: anúncios, salvos, perfil
+│   ├── mensagens/       Conversas entre membros
+│   └── api/auth/        Handler do Better Auth
+├── components/          Componentes de domínio
+│   └── ui/              Primitivas do design system
+├── db/                  Schema Drizzle, cliente, migrações e seed
+├── lib/                 Ambiente, autenticação, sessão, geo, validações
+├── server/
+│   ├── actions/         Server Actions (escrita)
+│   └── queries/         Consultas (leitura)
+└── test/                Configuração da suíte
+```
 
-To learn more about Next.js, take a look at the following resources:
+A leitura e a escrita ficam separadas de propósito: `queries/` só lê e pode ser chamado por
+qualquer Server Component; `actions/` sempre valida a entrada e verifica a autorização antes de
+gravar. O raciocínio completo está em [`docs/architecture.md`](./docs/architecture.md).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Documentação
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+| Documento | Conteúdo |
+| --- | --- |
+| [Primeiros passos](./docs/getting-started.md) | Instalação, variáveis de ambiente, problemas comuns |
+| [Arquitetura](./docs/architecture.md) | Camadas, fluxo de uma requisição, fronteiras |
+| [Modelo de dados](./docs/data-model.md) | Tabelas, relações, índices e colunas geradas |
+| [Busca geoespacial](./docs/busca-geoespacial.md) | Como o PostGIS resolve o filtro por raio |
+| [Design system](./docs/design-system.md) | Tokens em OKLCH derivados da paleta do projeto |
+| [Testes](./docs/testing.md) | O que é testado em cada nível e por quê |
+| [Segurança](./docs/seguranca.md) | Sessões, autorização, limites e superfície exposta |
+| [Deploy](./docs/deployment.md) | Publicação em plataformas com free tier |
+| [Roteiro](./docs/roadmap.md) | O que ficou fora e o que vem a seguir |
+| [Decisões (ADRs)](./docs/decisions/) | Registro das decisões técnicas |
 
-## Deploy on Netlify 🛩️
+## Contribuindo
 
-The site is currently being deployed on [Netlify Platform](https://www.netlify.com/) at [https://collabcity.netlify.app/](https://collabcity.netlify.app/).
+Contribuições de qualquer tipo são bem-vindas — código, documentação, design, ideias e relatos de
+problema. Comece pelo [guia de contribuição](./CONTRIBUTING.md) e pela
+[lista de issues](https://github.com/CollabCity/CollabCity/issues).
 
-Check out [Experience Next.js on Netlify](https://www.netlify.com/with/nextjs/) and [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+## Contribuidores ✨
 
-## Contributors ✨
-
-Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+Obrigado às pessoas que ajudaram a construir este projeto
+([legenda dos emojis](https://allcontributors.org/docs/en/emoji-key)):
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
@@ -74,7 +160,12 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 
 <!-- markdownlint-restore -->
 <!-- prettier-ignore-end -->
-
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
-This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
+Este projeto segue a especificação
+[all-contributors](https://github.com/all-contributors/all-contributors). Contribuições de
+qualquer tipo são bem-vindas.
+
+## Licença
+
+[MIT](./LICENSE).
