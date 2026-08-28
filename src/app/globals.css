@@ -1,0 +1,172 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ---------------------------------------------------------------------------
+   Tokens semânticos.
+
+   As cores derivam da paleta "Deep" definida em docs/colorPalette e estão em
+   OKLCH: o espaço é perceptualmente uniforme, então clarear ou escurecer um
+   tom é só mexer no primeiro valor, sem alterar matiz nem saturação.
+   --------------------------------------------------------------------------- */
+:root {
+  --background: oklch(0.99 0.004 300);
+  --foreground: oklch(0.145 0.0758 292.29);
+
+  --card: oklch(1 0 0);
+  --card-foreground: var(--foreground);
+
+  --popover: oklch(1 0 0);
+  --popover-foreground: var(--foreground);
+
+  /* Violeta profundo #4A08A6 */
+  --primary: oklch(0.3802 0.2092 290.12);
+  --primary-foreground: oklch(0.985 0.005 300);
+
+  /* Ameixa #711973 */
+  --secondary: oklch(0.95 0.025 327);
+  --secondary-foreground: oklch(0.4002 0.16 327.08);
+
+  --muted: oklch(0.965 0.008 300);
+  --muted-foreground: oklch(0.51 0.035 295);
+
+  /* Magenta #BF04A0 */
+  --accent: oklch(0.5477 0.2388 337.77);
+  --accent-foreground: oklch(0.985 0.005 300);
+
+  /* Laranja #F27329 — usado para sinalizar pedidos de ajuda */
+  --highlight: oklch(0.6957 0.1762 46.4);
+  --highlight-foreground: oklch(0.1591 0 0);
+
+  --destructive: oklch(0.58 0.21 25);
+  --destructive-foreground: oklch(0.985 0.005 300);
+
+  --success: oklch(0.56 0.14 155);
+  --success-foreground: oklch(0.985 0.005 300);
+
+  --border: oklch(0.91 0.012 300);
+  --input: oklch(0.91 0.012 300);
+  --ring: oklch(0.5477 0.2388 337.77);
+
+  --radius: 0.75rem;
+}
+
+.dark {
+  /* Noite #0D0126 */
+  --background: oklch(0.145 0.0758 292.29);
+  --foreground: oklch(0.96 0.012 320);
+
+  --card: oklch(0.2 0.085 296);
+  --card-foreground: var(--foreground);
+
+  --popover: oklch(0.2 0.085 296);
+  --popover-foreground: var(--foreground);
+
+  --primary: oklch(0.62 0.22 300);
+  --primary-foreground: oklch(0.145 0.0758 292.29);
+
+  --secondary: oklch(0.26 0.09 310);
+  --secondary-foreground: oklch(0.92 0.04 330);
+
+  --muted: oklch(0.24 0.07 296);
+  --muted-foreground: oklch(0.72 0.04 310);
+
+  --accent: oklch(0.6691 0.3076 327.45);
+  --accent-foreground: oklch(0.145 0.0758 292.29);
+
+  --highlight: oklch(0.74 0.17 48);
+  --highlight-foreground: oklch(0.1591 0 0);
+
+  --destructive: oklch(0.65 0.2 25);
+  --destructive-foreground: oklch(0.145 0.0758 292.29);
+
+  --success: oklch(0.68 0.14 155);
+  --success-foreground: oklch(0.145 0.0758 292.29);
+
+  --border: oklch(0.3 0.08 300);
+  --input: oklch(0.3 0.08 300);
+  --ring: oklch(0.6691 0.3076 327.45);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-highlight: var(--highlight);
+  --color-highlight-foreground: var(--highlight-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* O anel de foco é desenhado só para navegação por teclado, mas nunca é
+     removido: ele é o único indicador de posição para quem não usa mouse. */
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+
+  /* biome-ignore-start lint/complexity/noImportantStyles: a preferência do
+     sistema por menos movimento precisa vencer qualquer animação declarada
+     depois, e só !important garante isso na cascata. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+  /* biome-ignore-end lint/complexity/noImportantStyles: fim da exceção. */
+}
+
+@utility container-page {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 80rem;
+  padding-inline: 1rem;
+  @media (min-width: 640px) {
+    padding-inline: 1.5rem;
+  }
+  @media (min-width: 1024px) {
+    padding-inline: 2rem;
+  }
+}
