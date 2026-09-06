@@ -20,7 +20,12 @@ export default async function NewListingPage() {
         </p>
       </header>
 
-      <ListingForm action={createListing} categories={categories} submitLabel="Publicar" />
+      <ListingForm
+        action={createListing}
+        categories={categories}
+        submitLabel="Publicar"
+        withImages
+      />
     </div>
   );
 }

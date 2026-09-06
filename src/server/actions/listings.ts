@@ -8,13 +8,21 @@ import { listings } from "@/db/schema";
 import { requireSession } from "@/lib/session";
 import { slugify } from "@/lib/utils";
 import { listingInputSchema } from "@/lib/validations/listing";
+import { attachImages } from "@/server/actions/images";
 import { pruneRateLimits, rateLimit } from "@/server/rate-limit";
 import { type ActionState, errorState, successState } from "./types";
 
-/** Converte o FormData em um objeto plano, ignorando campos vazios opcionais. */
+/**
+ * Converte o FormData em um objeto plano, ignorando campos vazios opcionais.
+ *
+ * Arquivos são descartados aqui: o mesmo formulário carrega as imagens, e um
+ * `File` chegando ao schema do Zod viraria erro de validação em um campo que
+ * nem existe no anúncio.
+ */
 function toObject(formData: FormData) {
-  const raw = Object.fromEntries(formData.entries());
-  return Object.fromEntries(Object.entries(raw).filter(([, value]) => value !== ""));
+  return Object.fromEntries(
+    Array.from(formData.entries()).filter(([, value]) => value !== "" && !(value instanceof File)),
+  );
 }
 
 export async function createListing(_prev: ActionState, formData: FormData): Promise<ActionState> {
@@ -40,8 +48,19 @@ export async function createListing(_prev: ActionState, formData: FormData): Pro
 
   if (!created) return errorState("Não foi possível publicar o anúncio.");
 
+  // As imagens vêm no mesmo envio, mas só podem ser gravadas depois que o
+  // anúncio existe — elas pendem do identificador dele. Uma falha aqui não
+  // desfaz a publicação: o anúncio fica no ar e as fotos entram pela edição.
+  const files = formData.getAll("images").filter((value): value is File => value instanceof File);
+  const { error } = await attachImages(created.id, files);
+
   revalidatePath("/anuncios");
   revalidatePath("/painel");
+
+  if (error) {
+    redirect(`/anuncios/${created.id}/editar?imagens=${encodeURIComponent(error)}`);
+  }
+
   redirect(`/anuncios/${created.id}`);
 }
 

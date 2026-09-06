@@ -1,16 +1,21 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ListingForm } from "@/components/listing-form";
+import { ListingImagesManager } from "@/components/listing-images-manager";
 import { requireOwnership } from "@/lib/session";
 import { updateListing } from "@/server/actions/listings";
 import { getCategories, getListingById } from "@/server/queries/listings";
 
 export const metadata: Metadata = { title: "Editar anúncio" };
 
-type PageProps = { params: Promise<{ id: string }> };
+type PageProps = {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ imagens?: string }>;
+};
 
-export default async function EditListingPage({ params }: PageProps) {
+export default async function EditListingPage({ params, searchParams }: PageProps) {
   const { id } = await params;
+  const { imagens } = await searchParams;
   const listing = await getListingById(id);
   if (!listing) notFound();
 
@@ -44,6 +49,14 @@ export default async function EditListingPage({ params }: PageProps) {
           longitude: listing.longitude,
         }}
       />
+
+      <div className="mt-10 border-border border-t pt-8">
+        <ListingImagesManager
+          listingId={listing.id}
+          images={listing.images}
+          initialError={imagens}
+        />
+      </div>
     </div>
   );
 }

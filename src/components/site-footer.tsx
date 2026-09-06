@@ -19,6 +19,9 @@ export function SiteFooter() {
           <Link href="/anuncios/novo" className="text-muted-foreground hover:text-foreground">
             Publicar
           </Link>
+          <Link href="/seguranca" className="text-muted-foreground hover:text-foreground">
+            Segurança
+          </Link>
           <a
             href="https://github.com/CollabCity/CollabCity"
             className="text-muted-foreground hover:text-foreground"

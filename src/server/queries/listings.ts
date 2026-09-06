@@ -1,9 +1,32 @@
 import { and, desc, eq, isNotNull, type SQL, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { categories, favorites, listingImages, listings, profiles, user } from "@/db/schema";
+import {
+  categories,
+  favorites,
+  listingImages,
+  listings,
+  profiles,
+  suspensions,
+  user,
+} from "@/db/schema";
 import type { SearchParams } from "@/lib/validations/listing";
 
 export const PAGE_SIZE = 12;
+
+/**
+ * Exclui anúncios de contas suspensas.
+ *
+ * A suspensão precisa tirar o conteúdo do ar, e não só barrar a pessoa de
+ * entrar: sem isto, uma conta suspensa por golpe continuaria com os anúncios
+ * dela no topo da busca.
+ */
+function authorNotSuspended(): SQL {
+  return sql`NOT EXISTS (
+    SELECT 1 FROM ${suspensions}
+    WHERE ${suspensions.userId} = ${listings.authorId}
+      AND ${suspensions.liftedAt} IS NULL
+  )`;
+}
 
 /** Ponto de referência da busca, no formato `geography` do PostGIS. */
 function originPoint(latitude: number, longitude: number): SQL {
@@ -49,7 +72,7 @@ export async function searchListings(params: SearchParams) {
     ? originPoint(params.latitude as number, params.longitude as number)
     : null;
 
-  const conditions: SQL[] = [eq(listings.status, "open")];
+  const conditions: SQL[] = [eq(listings.status, "open"), authorNotSuspended()];
 
   if (params.q) conditions.push(sql`${listings.searchVector} @@ ${textQuery(params.q)}`);
   if (params.category) conditions.push(eq(categories.slug, params.category));

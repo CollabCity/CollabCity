@@ -11,3 +11,27 @@ export const exchangeMode = pgEnum("exchange_mode", ["free", "trade", "paid"]);
 
 /** Ciclo de vida de um anúncio. */
 export const listingStatus = pgEnum("listing_status", ["draft", "open", "fulfilled", "archived"]);
+
+/** Por que um conteúdo está sendo denunciado. */
+export const reportReason = pgEnum("report_reason", [
+  "scam",
+  "illegal",
+  "harassment",
+  "spam",
+  "misleading",
+  "other",
+]);
+
+/** Situação de uma denúncia na fila de moderação. */
+export const reportStatus = pgEnum("report_status", ["open", "upheld", "dismissed"]);
+
+/**
+ * O que alguém da equipe pode fazer.
+ *
+ * `admin` é um superconjunto de `moderator`: além de resolver denúncias, pode
+ * suspender e reativar contas.
+ */
+export const staffRole = pgEnum("staff_role", ["moderator", "admin"]);
+
+/** Situação de uma contestação de decisão da moderação. */
+export const appealStatus = pgEnum("appeal_status", ["open", "accepted", "rejected"]);

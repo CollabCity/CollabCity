@@ -8,6 +8,48 @@
       "when": 1787874618577,
       "tag": "0000_init",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1788630246396,
+      "tag": "0001_light_mulholland_black",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788659380865,
+      "tag": "0002_kind_warstar",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1788659473295,
+      "tag": "0003_dazzling_taskmaster",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1788660935892,
+      "tag": "0004_abandoned_blur",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1788661238168,
+      "tag": "0005_flippant_jubilee",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1788662613021,
+      "tag": "0006_daffy_nocturne",
+      "breakpoints": true
     }
   ]
 }

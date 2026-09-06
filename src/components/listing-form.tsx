@@ -4,6 +4,7 @@ import { LocateFixedIcon } from "lucide-react";
 import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { toast } from "sonner";
+import { ImagePicker } from "@/components/image-picker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,11 +41,14 @@ export function ListingForm({
   categories,
   defaultValues = {},
   submitLabel,
+  withImages = false,
 }: {
   action: (state: ActionState, formData: FormData) => Promise<ActionState>;
   categories: Category[];
   defaultValues?: ListingFormValues;
   submitLabel: string;
+  /** Exibe o seletor de fotos junto do formulário. Só faz sentido na criação. */
+  withImages?: boolean;
 }) {
   const [state, formAction] = useActionState(action, idleState);
   const [exchange, setExchange] = useState(defaultValues.exchange ?? "free");
@@ -204,6 +208,10 @@ export function ListingForm({
           </Button>
         </div>
       </fieldset>
+
+      {/* Só na criação: na edição as fotos têm gerenciador próprio, porque lá
+          elas entram e saem na hora, sem passar pelo botão de salvar. */}
+      {withImages && <ImagePicker />}
 
       <SubmitButton label={submitLabel} />
     </form>

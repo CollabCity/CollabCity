@@ -1,8 +1,21 @@
-import { sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { auth } from "@/lib/auth";
+import { putImage } from "@/lib/storage";
 import { slugify } from "@/lib/utils";
 import { db } from "./index";
-import { categories, conversations, listings, messages, profiles } from "./schema";
+import { placeholderPng } from "./placeholder-image";
+import {
+  categories,
+  conversations,
+  listingImages,
+  listings,
+  messages,
+  moderators,
+  profiles,
+  reports,
+  reviews,
+  user,
+} from "./schema";
 
 /**
  * Popula o banco com um recorte realista para desenvolvimento e demonstração.
@@ -118,7 +131,39 @@ const PEOPLE = [
     longitude: -43.9345,
     headline: "Ciclista e mecânico amador",
   },
+  {
+    name: "Equipe de moderação",
+    email: "moderacao@exemplo.test",
+    city: "Recife",
+    state: "PE",
+    latitude: -8.0476,
+    longitude: -34.877,
+    headline: "Cuida das denúncias da plataforma",
+  },
+  {
+    name: "Equipe de revisão",
+    email: "revisao@exemplo.test",
+    city: "Recife",
+    state: "PE",
+    latitude: -8.0476,
+    longitude: -34.877,
+    headline: "Revisa contestações de decisões da moderação",
+  },
 ];
+
+/**
+ * A equipe do seed, com os dois papéis.
+ *
+ * São **duas** pessoas de propósito: quem toma uma decisão não pode julgar a
+ * contestação dela, então uma equipe de um só deixaria toda contestação
+ * travada — e a regra pareceria defeito.
+ */
+const STAFF: { email: string; role: "moderator" | "admin" }[] = [
+  { email: "moderacao@exemplo.test", role: "admin" },
+  { email: "revisao@exemplo.test", role: "moderator" },
+];
+
+const MODERATOR_EMAIL = "moderacao@exemplo.test";
 
 const SEED_PASSWORD = "collabcity-demo-2026";
 
@@ -318,10 +363,252 @@ const LISTINGS: ListingSeed[] = [
   },
 ];
 
+/** Combinações de troca já concluídas, para o perfil público nascer com histórico. */
+const COMPLETED_EXCHANGES = [
+  { requester: "carla@exemplo.test", ratingGiven: 5, ratingReceived: 5, daysAgo: 40 },
+  { requester: "elisa@exemplo.test", ratingGiven: 4, ratingReceived: 5, daysAgo: 25 },
+  { requester: "felipe@exemplo.test", ratingGiven: 5, ratingReceived: 4, daysAgo: 12 },
+  { requester: "bruno@exemplo.test", ratingGiven: 3, ratingReceived: null, daysAgo: 2 },
+] as const;
+
+const COMMENTS: Record<number, string> = {
+  5: "Combinou o horário, chegou pontualmente e ainda ajudou a carregar. Recomendo.",
+  4: "Deu tudo certo. Demorou um pouco para responder, mas foi atencioso no encontro.",
+  3: "A troca aconteceu, mas remarcamos duas vezes antes de conseguir.",
+};
+
+function daysAgo(days: number): Date {
+  return new Date(Date.now() - days * 86_400_000);
+}
+
+/**
+ * Cria conversas com mensagens dos dois lados e as avaliações correspondentes.
+ *
+ * A última combinação tem avaliação de um lado só e é recente de propósito: é o
+ * caso que exercita o prazo às cegas, em que a avaliação existe no banco mas
+ * ainda não aparece em nenhum perfil.
+ */
+async function seedReviews(
+  insertedListings: { id: string; authorId: string }[],
+  userByEmail: Map<string, string>,
+): Promise<number> {
+  let created = 0;
+
+  for (const [index, exchange] of COMPLETED_EXCHANGES.entries()) {
+    const listing = insertedListings[index + 1];
+    const requesterId = userByEmail.get(exchange.requester);
+    if (!listing || !requesterId || listing.authorId === requesterId) continue;
+
+    const startedAt = daysAgo(exchange.daysAgo + 3);
+
+    const [conversation] = await db
+      .insert(conversations)
+      .values({
+        listingId: listing.id,
+        ownerId: listing.authorId,
+        requesterId,
+        createdAt: startedAt,
+        lastMessageAt: daysAgo(exchange.daysAgo),
+      })
+      .returning({ id: conversations.id });
+
+    if (!conversation) continue;
+
+    await db.insert(messages).values([
+      {
+        conversationId: conversation.id,
+        senderId: requesterId,
+        body: "Oi! Ainda está disponível? Consigo passar aí no fim de semana.",
+        createdAt: startedAt,
+      },
+      {
+        conversationId: conversation.id,
+        senderId: listing.authorId,
+        body: "Oi! Está sim. Pode ser sábado de manhã, na praça em frente ao mercado?",
+        createdAt: new Date(startedAt.getTime() + 2 * 3_600_000),
+      },
+    ]);
+
+    const written = [
+      {
+        conversationId: conversation.id,
+        authorId: requesterId,
+        subjectId: listing.authorId,
+        rating: exchange.ratingGiven,
+        comment: COMMENTS[exchange.ratingGiven] ?? null,
+        createdAt: daysAgo(exchange.daysAgo),
+      },
+    ];
+
+    if (exchange.ratingReceived !== null) {
+      written.push({
+        conversationId: conversation.id,
+        authorId: listing.authorId,
+        subjectId: requesterId,
+        rating: exchange.ratingReceived,
+        comment: COMMENTS[exchange.ratingReceived] ?? null,
+        createdAt: daysAgo(exchange.daysAgo),
+      });
+    }
+
+    await db.insert(reviews).values(written);
+    created += written.length;
+  }
+
+  return created;
+}
+
+/**
+ * Conversas recebidas por um mesmo membro, com respostas em ritmos diferentes.
+ *
+ * Existe para que ao menos um perfil de demonstração ultrapasse o mínimo de
+ * conversas e exiba taxa e tempo de resposta — abaixo desse mínimo o perfil
+ * deliberadamente não afirma nada, e o demo pareceria quebrado.
+ */
+async function seedResponseHistory(
+  insertedListings: { id: string; authorId: string }[],
+  userByEmail: Map<string, string>,
+): Promise<void> {
+  const first = insertedListings[0];
+  if (!first) return;
+
+  // Todas as conversas precisam cair no mesmo dono para somarem no perfil dele;
+  // por isso a lista é filtrada por autor em vez de indexada por posição.
+  const owned = insertedListings.filter((listing) => listing.authorId === first.authorId);
+
+  const contacts = [
+    { email: "carla@exemplo.test", replyAfterHours: 2 },
+    { email: "elisa@exemplo.test", replyAfterHours: 20 },
+    { email: "felipe@exemplo.test", replyAfterHours: null },
+  ] as const;
+
+  for (const [index, contact] of contacts.entries()) {
+    const requesterId = userByEmail.get(contact.email);
+    const target = owned[index % owned.length];
+    if (!requesterId || !target || target.authorId === requesterId) continue;
+
+    const startedAt = daysAgo(20 - index * 4);
+
+    const [conversation] = await db
+      .insert(conversations)
+      .values({ listingId: target.id, ownerId: target.authorId, requesterId, createdAt: startedAt })
+      // A unicidade `(listing_id, requester_id)` pode já ter sido ocupada pelas
+      // trocas avaliadas acima; nesse caso esta conversa é simplesmente pulada.
+      .onConflictDoNothing({ target: [conversations.listingId, conversations.requesterId] })
+      .returning({ id: conversations.id });
+
+    if (!conversation) continue;
+
+    await db.insert(messages).values({
+      conversationId: conversation.id,
+      senderId: requesterId,
+      body: "Oi! Vi seu anúncio e fiquei interessado. Como funciona?",
+      createdAt: startedAt,
+    });
+
+    if (contact.replyAfterHours !== null) {
+      await db.insert(messages).values({
+        conversationId: conversation.id,
+        senderId: target.authorId,
+        body: "Oi! Funciona assim: a gente combina um horário e eu explico tudo pessoalmente.",
+        createdAt: new Date(startedAt.getTime() + contact.replyAfterHours * 3_600_000),
+      });
+    }
+  }
+}
+
+/**
+ * Uma denúncia de anúncio e uma de avaliação, para a fila nascer com conteúdo.
+ *
+ * Quem denuncia nunca é o autor do alvo: a ação recusaria, e uma linha assim no
+ * seed esconderia essa regra de quem for ler.
+ */
+async function seedReports(
+  insertedListings: { id: string; authorId: string }[],
+  userByEmail: Map<string, string>,
+): Promise<number> {
+  const values: (typeof reports.$inferInsert)[] = [];
+
+  const listing = insertedListings.find(
+    (item) => item.authorId !== userByEmail.get("diego@exemplo.test"),
+  );
+  const denunciante = userByEmail.get("diego@exemplo.test");
+
+  if (listing && denunciante) {
+    values.push({
+      reporterId: denunciante,
+      listingId: listing.id,
+      reason: "misleading",
+      details:
+        "A descrição promete entrega em domicílio, mas na conversa a pessoa disse que só entrega mediante pagamento antecipado por transferência.",
+    });
+  }
+
+  // A avaliação denunciada é escolhida pela autora, e não a primeira que vier:
+  // o alvo da denúncia é quem escreveu, e deixar isso ao acaso tornaria a fila
+  // de demonstração — e o teste que a exercita — dependente da ordem de
+  // inserção.
+  const autora = userByEmail.get("carla@exemplo.test");
+  const [review] = autora
+    ? await db
+        .select({ id: reviews.id, authorId: reviews.authorId, subjectId: reviews.subjectId })
+        .from(reviews)
+        .where(eq(reviews.authorId, autora))
+        .limit(1)
+    : [];
+
+  if (review) {
+    values.push({
+      reporterId: review.subjectId,
+      reviewId: review.id,
+      reason: "other",
+      details:
+        "A avaliação descreve uma combinação que não foi a nossa: acho que a pessoa confundiu com outro anúncio.",
+    });
+  }
+
+  if (values.length === 0) return 0;
+
+  await db.insert(reports).values(values);
+  return values.length;
+}
+
+/**
+ * Dá foto de capa aos primeiros anúncios.
+ *
+ * Grava pelo mesmo caminho que o envio de verdade usa, `putImage`, em vez de
+ * inserir uma URL inventada: assim o seed exercita o armazenamento configurado
+ * e um `STORAGE_DRIVER` quebrado aparece aqui, não na primeira pessoa que
+ * tentar publicar uma foto.
+ */
+async function seedImages(insertedListings: { id: string }[]): Promise<number> {
+  let created = 0;
+
+  for (const [index, listing] of insertedListings.slice(0, 10).entries()) {
+    const stored = await putImage(
+      new Uint8Array(placeholderPng(index + 1)),
+      "image/png",
+      `anuncios/${listing.id}`,
+    );
+
+    await db.insert(listingImages).values({
+      listingId: listing.id,
+      url: stored.url,
+      storageKey: stored.key,
+      alt: "Imagem de demonstração",
+      sortOrder: 0,
+    });
+
+    created += 1;
+  }
+
+  return created;
+}
+
 async function main() {
   console.warn("Limpando dados de domínio...");
   await db.execute(sql`
-    TRUNCATE TABLE messages, conversations, favorites, listing_images, listings,
+    TRUNCATE TABLE reports, moderators, reviews, messages, conversations, favorites, listing_images, listings,
       profiles, categories, session, account, "user" RESTART IDENTITY CASCADE
   `);
 
@@ -342,6 +629,14 @@ async function main() {
     });
     userByEmail.set(person.email, created.user.id);
 
+    // O Better Auth carimba `created_at` com a data de hoje. Sem envelhecer as
+    // contas, o perfil de demonstração exibiria "Novo por aqui" ao lado de
+    // avaliações de meses atrás.
+    await db
+      .update(user)
+      .set({ createdAt: daysAgo(180) })
+      .where(eq(user.id, created.user.id));
+
     await db.insert(profiles).values({
       userId: created.user.id,
       headline: person.headline,
@@ -350,6 +645,11 @@ async function main() {
       latitude: person.latitude,
       longitude: person.longitude,
     });
+  }
+
+  for (const member of STAFF) {
+    const staffId = userByEmail.get(member.email);
+    if (staffId) await db.insert(moderators).values({ userId: staffId, role: member.role });
   }
 
   console.warn("Inserindo anúncios...");
@@ -413,10 +713,21 @@ async function main() {
     }
   }
 
+  console.warn("Criando trocas concluídas e avaliações...");
+  const reviewed = await seedReviews(insertedListings, userByEmail);
+  await seedResponseHistory(insertedListings, userByEmail);
+
+  console.warn("Gerando imagens de demonstração...");
+  const imagens = await seedImages(insertedListings);
+
+  console.warn("Abrindo a fila de moderação...");
+  const denuncias = await seedReports(insertedListings, userByEmail);
+
   console.warn(
-    `Pronto: ${insertedCategories.length} categorias, ${PEOPLE.length} contas e ${insertedListings.length} anúncios.`,
+    `Pronto: ${insertedCategories.length} categorias, ${PEOPLE.length} contas, ${insertedListings.length} anúncios, ${imagens} imagens, ${reviewed} avaliações e ${denuncias} denúncias.`,
   );
   console.warn(`Entre com qualquer e-mail acima e a senha: ${SEED_PASSWORD}`);
+  console.warn(`A fila de moderação fica em /painel/denuncias, com ${MODERATOR_EMAIL}.`);
 }
 
 main()

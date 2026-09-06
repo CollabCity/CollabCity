@@ -68,6 +68,14 @@ export const listingImages = pgTable(
       .notNull()
       .references(() => listings.id, { onDelete: "cascade" }),
     url: text("url").notNull(),
+    /**
+     * Caminho do arquivo dentro do armazenamento.
+     *
+     * Guardado à parte da `url` porque é ele que permite apagar o objeto: a URL
+     * pública pode ter prefixo de CDN ou domínio próprio, e derivar a chave dela
+     * quebraria assim que esse endereço mudasse.
+     */
+    storageKey: text("storage_key"),
     alt: text("alt"),
     sortOrder: integer("sort_order").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),

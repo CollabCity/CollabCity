@@ -43,3 +43,6 @@ pnpm-debug.log*
 # Deploy
 .vercel
 .netlify
+
+# Arquivos enviados no modo de armazenamento local
+/public/uploads/

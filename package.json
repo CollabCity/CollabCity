@@ -28,6 +28,7 @@
     "db:push": "dotenv -e .env.local -- drizzle-kit push",
     "db:studio": "dotenv -e .env.local -- drizzle-kit studio",
     "db:seed": "dotenv -e .env.local -- tsx src/db/seed.ts",
+    "db:e2e": "tsx e2e/prepare-database.ts",
     "db:reset": "docker compose down -v && docker compose up -d --wait && pnpm db:migrate && pnpm db:seed",
     "check": "pnpm lint && pnpm typecheck && pnpm test"
   },
@@ -41,6 +42,7 @@
     "@radix-ui/react-slot": "^1.3.3",
     "@radix-ui/react-tabs": "^1.1.21",
     "@t3-oss/env-nextjs": "^0.13.11",
+    "aws4fetch": "^1.0.20",
     "better-auth": "^1.7.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

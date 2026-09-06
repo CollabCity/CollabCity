@@ -1,0 +1,1 @@
+ALTER TABLE "listing_images" ADD COLUMN "storage_key" text;

@@ -1,9 +1,12 @@
 import { CalendarIcon, EyeIcon, MapPinIcon } from "lucide-react";
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ContactForm } from "@/components/contact-form";
 import { FavoriteButton } from "@/components/favorite-button";
+import { ReportDialog } from "@/components/report-dialog";
+import { SafetyNotice } from "@/components/safety-notice";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,6 +16,7 @@ import { getSession } from "@/lib/session";
 import { EXCHANGE_LABELS, INTENT_LABELS, intentVariant, RESOURCE_LABELS } from "@/lib/taxonomy";
 import { formatDistance, formatPrice, initials } from "@/lib/utils";
 import { getListingById, getNearbyListings } from "@/server/queries/listings";
+import { hasReported } from "@/server/queries/reports";
 
 type PageProps = { params: Promise<{ id: string }> };
 
@@ -36,6 +40,8 @@ export default async function ListingPage({ params }: PageProps) {
 
   const nearby = await getNearbyListings(listing.id);
   const isAuthor = session?.user.id === listing.authorId;
+  const reported =
+    session && !isAuthor ? await hasReported(session.user.id, "listing", listing.id) : false;
   const price = listing.exchange === "paid" ? formatPrice(listing.priceCents) : null;
 
   return (
@@ -79,6 +85,36 @@ export default async function ListingPage({ params }: PageProps) {
           </div>
         </dl>
 
+        {listing.images.length > 0 && (
+          <ul
+            className={
+              listing.images.length === 1 ? "grid gap-2" : "grid grid-cols-2 gap-2 sm:grid-cols-3"
+            }
+          >
+            {listing.images.map((image, index) => (
+              <li
+                key={image.id}
+                className={
+                  listing.images.length > 1 && index === 0
+                    ? "col-span-2 row-span-2 sm:col-span-2"
+                    : undefined
+                }
+              >
+                <div className="relative aspect-[4/3] overflow-hidden rounded-lg border border-border bg-muted">
+                  <Image
+                    src={image.url}
+                    alt={image.alt ?? ""}
+                    fill
+                    sizes="(min-width: 640px) 33vw, 50vw"
+                    className="object-cover"
+                    priority={index === 0}
+                  />
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+
         <Separator />
 
         <div className="whitespace-pre-wrap text-pretty leading-relaxed">{listing.description}</div>
@@ -115,8 +151,12 @@ export default async function ListingPage({ params }: PageProps) {
                 <AvatarFallback>{initials(listing.authorName)}</AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-medium">{listing.authorName}</p>
-                <p className="text-muted-foreground text-xs">Publicou este anúncio</p>
+                <p className="font-medium">
+                  <Link href={`/membros/${listing.authorId}`} className="hover:underline">
+                    {listing.authorName}
+                  </Link>
+                </p>
+                <p className="text-muted-foreground text-xs">Ver perfil e avaliações</p>
               </div>
             </div>
 
@@ -147,6 +187,17 @@ export default async function ListingPage({ params }: PageProps) {
             {session && !isAuthor && <FavoriteButton listingId={listing.id} />}
           </CardContent>
         </Card>
+
+        {!isAuthor && <SafetyNotice context="listing" />}
+
+        {session && !isAuthor && (
+          <ReportDialog
+            target="listing"
+            targetId={listing.id}
+            alreadyReported={reported}
+            className="w-full"
+          />
+        )}
       </aside>
     </div>
   );
