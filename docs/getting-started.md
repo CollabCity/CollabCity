@@ -95,13 +95,15 @@ pnpm dev
 pnpm check   # lint + tipos + testes, exatamente o que a CI executa
 ```
 
-Os testes de ponta a ponta ficam de fora do `check` porque exigem banco populado e navegador:
+Os testes de ponta a ponta ficam de fora do `check` porque exigem navegador e sobem um servidor:
 
 ```bash
 pnpm exec playwright install chromium   # uma vez
-pnpm db:reset
 pnpm test:e2e
 ```
+
+Eles criam e populam um banco próprio, `collabcity_e2e`, e sobem o servidor na porta 3100. O seu
+banco de desenvolvimento não é tocado. Os detalhes estão em [testes](./testing.md).
 
 ## Problemas comuns
 

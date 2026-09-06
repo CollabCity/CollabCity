@@ -33,8 +33,8 @@ absurdo.
   porque é onde um erro é silencioso e plausível.
 - Os testes de componente usam papéis acessíveis (`getByRole`), não classes CSS: quebram quando o
   nome acessível some, e não quando alguém renomeia um estilo.
-- Os testes de ponta a ponta dependem de banco populado (`pnpm db:reset`) e ficam fora do
-  `pnpm check`.
+- Os testes de ponta a ponta ficam fora do `pnpm check`. O banco que eles usam passou a ser
+  dedicado e preparado pela própria suíte — ver [ADR-0015](./0015-banco-dedicado-para-testes-de-ponta-a-ponta.md).
 - Uma armadilha descoberta na prática: os testes de autenticação fazem login de verdade, e o limite
   do Better Auth é por IP. Uma suíte muito paralela esbarra no limite e falha com sintoma enganoso.
   O limite está explícito em `src/lib/auth.ts`.

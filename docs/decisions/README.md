@@ -46,3 +46,10 @@ O que melhorou, o que piorou, e o que passou a ser obrigatório manter.
 | [0012](./0012-typescript-5-em-vez-de-7.md) | TypeScript 5.9 em vez do 7 | aceita |
 | [0013](./0013-vitest-e-playwright.md) | Vitest e Playwright | aceita |
 | [0014](./0014-portugues-como-idioma-do-produto.md) | Português como idioma do produto | aceita |
+| [0015](./0015-banco-dedicado-para-testes-de-ponta-a-ponta.md) | Banco dedicado para os testes de ponta a ponta | aceita |
+| [0016](./0016-avaliacoes-presas-a-conversas.md) | Perfil público e avaliações presas a conversas | aceita |
+| [0017](./0017-aviso-de-responsabilidade-e-seguranca.md) | Aviso de responsabilidade e orientação de segurança | aceita |
+| [0018](./0018-canal-de-denuncia-e-moderacao.md) | Canal de denúncia e fila de moderação | aceita |
+| [0019](./0019-imagens-nos-anuncios.md) | Imagens nos anúncios | aceita |
+| [0020](./0020-suspensao-de-contas.md) | Suspensão de contas, restrita à administração | aceita |
+| [0021](./0021-contestacao-de-decisoes.md) | Contestação de decisões da moderação | aceita |

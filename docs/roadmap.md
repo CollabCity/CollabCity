@@ -25,6 +25,10 @@ aceitável, mas a experiência fica aquém do que as pessoas esperam de um chat.
 `requireEmailVerification` está desligado porque depende de um provedor de envio. Resend e
 Postmark têm camadas gratuitas viáveis; falta decidir e integrar.
 
+Isso pesa mais desde que existem avaliações: enquanto criar conta for gratuito e instantâneo,
+abandonar uma avaliação ruim também é, e a reputação acaba pesando sobretudo sobre quem age de
+boa-fé e fica. Ver [ADR-0016](./decisions/0016-avaliacoes-presas-a-conversas.md).
+
 ### Sem geocodificação por nome
 
 Não há como digitar "Boa Viagem, Recife" e obter coordenadas. É preciso usar a geolocalização do
@@ -47,16 +51,28 @@ triangular a posição de um anúncio a partir de origens diferentes.
 Mitigações a avaliar: arredondar a distância exibida em faixas ("menos de 2 km", "2 a 5 km"), ou
 deslocar o ponto armazenado por um vetor aleatório fixo por anúncio.
 
-### Upload de imagens
+### Imagens não são reprocessadas no servidor
 
-O schema tem `listing_images` e a configuração de armazenamento existe em `src/lib/env.ts`, mas o
-fluxo de envio não está implementado. Hoje os anúncios são apenas texto.
+Ordem e texto alternativo já se editam na tela do anúncio. O que permanece: nada re-codifica a
+imagem no servidor: a validação garante que o arquivo é do formato que diz ser,
+não que seja inofensivo em todo decodificador. Reprocessar exigiria `sharp`, descartado na ADR.
 
 ## Produto
 
-- **Denúncia e moderação.** Não há como sinalizar um anúncio abusivo. É o item mais urgente antes
-  de qualquer uso real.
-- **Reputação.** Confirmação de que a troca aconteceu, e avaliação entre as partes.
+- **Retorno por e-mail sobre decisões.** Quem denuncia não sabe o desfecho; quem é suspenso só
+  descobre ao tentar entrar; quem contesta só descobre ao voltar. Todos dependem do provedor de
+  envio que ainda falta.
+- **Prazo para responder a uma contestação.** Nada além da ordem da fila pressiona a moderação a
+  responder, e uma contestação pode ficar em aberto indefinidamente. Reverter automaticamente pelo
+  silêncio foi descartado na [ADR-0021](./decisions/0021-contestacao-de-decisoes.md) — premiaria
+  quem age de má-fé.
+- **Suspensão com prazo.** Hoje toda suspensão é por tempo indeterminado e só termina por
+  reativação manual. Um prazo automático exigiria processo agendado ou cálculo em toda leitura.
+- **Termos de uso e política de privacidade.** `/seguranca` explica o funcionamento e diz
+  explicitamente que não substitui os termos. Falta o documento formal, com revisão jurídica.
+- **Confirmação da troca.** `listings.status = 'fulfilled'` hoje é marcado só pelo autor, sem a
+  outra parte confirmar, e por isso não é exibido como sinal público no perfil. Uma confirmação de
+  duas pontas daria um contador de trocas concluídas — sinal que não infla como média de estrelas.
 - **Notificação por e-mail.** Aviso de mensagem nova. Depende do mesmo provedor de envio da
   verificação de conta.
 - **Mapa.** A busca é uma lista; um mapa comunicaria a distribuição espacial muito melhor.

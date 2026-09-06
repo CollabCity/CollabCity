@@ -65,8 +65,11 @@ Comente na issue antes de começar, para evitar que duas pessoas façam o mesmo 
    ponta:
 
    ```bash
-   pnpm db:reset && pnpm test:e2e
+   pnpm test:e2e
    ```
+
+   Eles preparam sozinhos o próprio banco (`collabcity_e2e`) e não tocam no seu de
+   desenvolvimento — ver [ADR-0015](./docs/decisions/0015-banco-dedicado-para-testes-de-ponta-a-ponta.md).
 
 4. Abra o pull request descrevendo **o que muda e por quê**. Se resolve uma issue, referencie-a
    (`Resolve #12`).

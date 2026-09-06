@@ -92,6 +92,32 @@ erDiagram
         text body
         timestamptz read_at
     }
+
+    reviews {
+        uuid id PK
+        uuid conversation_id FK
+        text author_id FK
+        text subject_id FK
+        integer rating "1 a 5"
+        text comment "até 300 caracteres"
+        timestamptz created_at
+        timestamptz hidden_at "ocultada pela moderação"
+    }
+
+    moderators {
+        text user_id PK,FK
+    }
+
+    reports {
+        uuid id PK
+        text reporter_id FK
+        uuid listing_id FK "um destes três"
+        uuid review_id FK
+        uuid conversation_id FK
+        enum reason
+        enum status "open | upheld | dismissed"
+        text resolution_note
+    }
 ```
 
 ## Tabelas de autenticação
@@ -136,6 +162,9 @@ anúncio significa atualizar esses dois números; o ponto geográfico e o índic
 | `profiles_location_idx` | GiST | Buscas centradas no perfil |
 | `conversations_owner_idx` / `_requester_idx` | B-tree | Caixa de mensagens, por data |
 | `messages_conversation_idx` | B-tree | Thread em ordem cronológica |
+| `reviews_subject_idx` | B-tree | Avaliações de um membro, mais recentes primeiro |
+| `reviews_conversation_idx` | B-tree | Verificar se a outra parte já avaliou |
+| `reports_status_idx` | B-tree | Fila de moderação: em aberto, das mais antigas |
 
 Que os índices espaciais e textuais são realmente usados dá para conferir:
 
@@ -160,10 +189,44 @@ Use `SET enable_seqscan = off` para confirmar que o índice está disponível.
 | `favorites.*` | `CASCADE` | Vínculo puro |
 | `conversations.listing_id` → `listings` | `CASCADE` | A conversa perde o objeto |
 | `messages.conversation_id` → `conversations` | `CASCADE` | Mensagem não existe fora da conversa |
+| `reviews.conversation_id` → `conversations` | `CASCADE` | A avaliação não existe sem a conversa que a autoriza |
+| `reviews.author_id` / `subject_id` → `user` | `CASCADE` | Conta apagada leva junto o que escreveu e recebeu |
+| `reports.listing_id` / `review_id` / `conversation_id` | `CASCADE` | Conteúdo removido leva junto as denúncias sobre ele |
+| `reports.resolved_by` → `user` | `SET NULL` | A decisão sobrevive à saída de quem moderou |
 
 A restrição `conversations_listing_requester_key` garante **uma conversa por par (anúncio,
 interessado)**. É ela que permite ao `startConversation` usar `ON CONFLICT DO UPDATE` e ser
 idempotente: responder duas vezes ao mesmo anúncio continua a conversa em vez de criar outra.
+
+`reviews` carrega quatro invariantes no próprio banco, e não em checagem de aplicação:
+
+| Restrição | Garante |
+| --- | --- |
+| `reviews_conversation_author_key` | Uma avaliação por pessoa em cada conversa |
+| `reviews_rating_range` | Nota entre 1 e 5 |
+| `reviews_comment_length` | Comentário de até 300 caracteres |
+| `reviews_no_self_review` | Ninguém avalia a si mesmo |
+
+A chave estrangeira para `conversations` é o que prende a avaliação a uma interação real: sem
+conversa, não há como avaliar. O raciocínio está na
+[ADR-0016](./decisions/0016-avaliacoes-presas-a-conversas.md).
+
+Uma avaliação só é **pública** quando a outra parte também avaliou ou quando passam 14 dias — e
+nunca quando `hidden_at` está preenchido. As duas condições são calculadas na leitura, por
+`isPublished()` em `src/server/queries/reviews.ts`; só `hidden_at` é coluna.
+
+`reports` aponta o alvo por **três chaves estrangeiras**, e não por um par `(tipo, id)` genérico:
+
+| Restrição | Garante |
+| --- | --- |
+| `reports_single_target` | Exatamente uma das três colunas de alvo preenchida |
+| `reports_details_length` | Relato de até 1000 caracteres |
+| `reports_reporter_listing_key` e as duas irmãs | Uma denúncia por pessoa em cada alvo |
+
+As três restrições de unicidade funcionam porque o Postgres não considera dois `NULL` iguais: cada
+uma só vale para as linhas daquele tipo de alvo. O custo das três colunas se paga em integridade —
+o banco garante que o alvo existe, e removê-lo leva junto as denúncias. Ver a
+[ADR-0018](./decisions/0018-canal-de-denuncia-e-moderacao.md).
 
 ## Dinheiro
 

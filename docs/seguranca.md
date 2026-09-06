@@ -1,5 +1,11 @@
 # Segurança
 
+Este documento trata da segurança **técnica** da aplicação: sessões, autorização, limites e
+superfície exposta. A orientação de segurança dirigida a quem usa a plataforma — o que ela não faz
+e como se proteger ao combinar uma troca — está na página `/seguranca` do produto e na
+[ADR-0017](./decisions/0017-aviso-de-responsabilidade-e-seguranca.md). O canal de denúncia e a fila
+de moderação estão na [ADR-0018](./decisions/0018-canal-de-denuncia-e-moderacao.md).
+
 ## Sessões
 
 A autenticação é do [Better Auth](https://better-auth.com), com as tabelas no próprio banco. Não
@@ -38,6 +44,9 @@ endereço IP — e vizinhos bloqueariam uns aos outros.
 | Publicar anúncio | 10 por hora |
 | Iniciar conversa | 20 por hora |
 | Enviar mensagem | 60 a cada 10 minutos |
+| Enviar avaliação | 10 por hora |
+| Enviar denúncia | 5 por hora |
+| Enviar imagem | 40 por hora |
 
 Esta segunda camada guarda os contadores **em memória do processo**. Com várias réplicas, o limite
 efetivo é multiplicado pelo número de instâncias. Serve para conter abuso trivial, não ataque
@@ -59,6 +68,22 @@ if (updated.length === 0) return errorState("Anúncio não encontrado.");
 
 Ler o dono e depois gravar abriria uma janela entre as duas operações e dependeria de ninguém
 esquecer a checagem. Aqui, sem linha correspondente, nada acontece.
+
+## Papéis e suspensão
+
+A equipe vive em `moderators`, com dois papéis: `moderator` resolve denúncias, `admin` faz isso e
+também suspende contas. São papéis encaixados — todo admin é moderador.
+
+A suspensão passa a valer em `requireSession`, por onde toda página autenticada e toda Server Action
+passam antes de qualquer escrita. É um ponto só, em vez de uma checagem por ação. Anúncios de contas
+suspensas também saem da busca e do perfil. Ver a
+[ADR-0020](./decisions/0020-suspensao-de-contas.md).
+
+## Arquivos enviados
+
+Imagens são validadas pelos **bytes**, nunca pelo `Content-Type` declarado pelo navegador, e SVG é
+recusado por ser XML capaz de carregar `<script>` — servido da mesma origem, viraria XSS. Detalhes
+na [ADR-0019](./decisions/0019-imagens-nos-anuncios.md).
 
 ## Não revelar o que existe
 
