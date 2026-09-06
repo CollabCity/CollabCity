@@ -1,0 +1,41 @@
+name: Manutenção
+
+# O expurgo das contas cujo prazo de arrependimento venceu.
+#
+# Fica aqui, e não dentro da aplicação, porque a premissa de camada gratuita
+# não comporta um processo agendado a mais. A esteira já existe e roda de graça.
+on:
+  schedule:
+    # Todo dia às 4h UTC, 1h em Brasília: fora do horário de uso.
+    - cron: "0 4 * * *"
+  workflow_dispatch:
+
+jobs:
+  expurgo:
+    name: Expurgar contas com prazo vencido
+    runs-on: ubuntu-latest
+    # Sem os segredos configurados o passo não roda, em vez de falhar todo dia
+    # em um repositório recém-clonado.
+    if: ${{ github.repository_owner != '' }}
+    steps:
+      - name: Chamar a rota de manutenção
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          MAINTENANCE_SECRET: ${{ secrets.MAINTENANCE_SECRET }}
+        run: |
+          if [ -z "$APP_URL" ] || [ -z "$MAINTENANCE_SECRET" ]; then
+            echo "APP_URL ou MAINTENANCE_SECRET não configurados; nada a fazer."
+            exit 0
+          fi
+
+          resposta=$(curl -sS -o corpo.json -w "%{http_code}" \
+            -X POST "$APP_URL/api/manutencao/expurgo" \
+            -H "Authorization: Bearer $MAINTENANCE_SECRET")
+
+          echo "HTTP $resposta"
+          cat corpo.json
+
+          if [ "$resposta" != "200" ]; then
+            echo "::error::O expurgo não foi executado."
+            exit 1
+          fi

@@ -1,6 +1,7 @@
 import { and, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import {
+  accountDeletions,
   categories,
   conversations,
   listingImages,
@@ -132,11 +133,16 @@ export async function getOpenListingsByAuthor(
       and(
         eq(listings.authorId, authorId),
         eq(listings.status, "open"),
-        // Mesma regra da busca: conta suspensa não mostra anúncio.
+        // Mesma regra da busca: conta suspensa ou em exclusão não mostra anúncio.
         sql`NOT EXISTS (
           SELECT 1 FROM ${suspensions}
           WHERE ${suspensions.userId} = ${listings.authorId}
             AND ${suspensions.liftedAt} IS NULL
+        ) AND NOT EXISTS (
+          SELECT 1 FROM ${accountDeletions}
+          WHERE ${accountDeletions.userId} = ${listings.authorId}
+            AND ${accountDeletions.cancelledAt} IS NULL
+            AND ${accountDeletions.completedAt} IS NULL
         )`,
       ),
     )

@@ -1,38 +1,28 @@
 "use server";
 
-import { randomUUID } from "node:crypto";
-import { eq, inArray } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
-import { account, favorites, listingImages, listings, profiles, session, user } from "@/db/schema";
+import { accountDeletions } from "@/db/schema";
+import { deletionDeadline } from "@/lib/account-deletion";
 import { auth } from "@/lib/auth";
+import { env } from "@/lib/env";
 import { getSession } from "@/lib/session";
-import { removeImage } from "@/lib/storage";
-import { type ActionState, errorState } from "./types";
+import { type ActionState, errorState, successState } from "./types";
 
 /**
- * Exclusão de conta, no sentido do art. 18 da LGPD.
+ * Agenda a exclusão da conta.
  *
- * O que é **apagado de verdade**: perfil, anúncios e as fotos deles, salvos,
- * credenciais e sessões. Nada disso sobrevive.
- *
- * O que é **anonimizado**: a linha em `user`. Nome vira "Membro removido",
- * e-mail vira um endereço inválido e único, foto some. A linha permanece
- * porque mensagens e avaliações pendem dela — e essas são de duas pessoas.
- * Apagá-la em cascata destruiria a conversa e a reputação de quem ficou, e o
- * direito de um não pode virar perda do outro. Dado anonimizado deixa de ser
- * dado pessoal (art. 12), então o direito é atendido.
- *
- * O que **permanece atribuído à conta anonimizada**: mensagens enviadas e
- * avaliações escritas sobre outras pessoas. O texto continua; o autor, não.
- *
- * Registros de moderação — denúncias, suspensões e contestações — também
- * permanecem, ligados à conta anonimizada, porque documentam decisões tomadas
- * sobre terceiros e sustentam o histórico de quem foi afetado.
+ * Agenda, e não executa: o conteúdo sai do ar imediatamente, mas o expurgo
+ * espera o prazo de arrependimento. Quem clicou por impulso, ou por engano,
+ * entra de novo e cancela — ver ADR-0024.
  */
-export async function deleteAccount(_prev: ActionState, formData: FormData): Promise<ActionState> {
+export async function requestAccountDeletion(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
   const current = await getSession();
   if (!current) return errorState("Entre na sua conta para continuar.");
 
@@ -40,65 +30,56 @@ export async function deleteAccount(_prev: ActionState, formData: FormData): Pro
     .trim()
     .toLowerCase();
 
-  // Digitar o próprio e-mail é a confirmação. A ação é irreversível, e um
-  // clique único num botão vermelho não é decisão suficiente para isso.
+  // Digitar o próprio e-mail é a confirmação. O prazo protege do arrependimento;
+  // isto protege do clique errado, que é problema diferente.
   if (confirmation !== current.user.email.toLowerCase()) {
     return errorState("Digite exatamente o e-mail da sua conta para confirmar.");
   }
 
-  const userId = current.user.id;
+  const [created] = await db
+    .insert(accountDeletions)
+    .values({
+      userId: current.user.id,
+      scheduledFor: deletionDeadline(env.ACCOUNT_DELETION_GRACE_DAYS),
+    })
+    // O índice parcial admite um pedido em aberto por conta; o conflito vira
+    // mensagem em vez de erro de banco.
+    .onConflictDoNothing()
+    .returning({ id: accountDeletions.id });
 
-  const ownListings = await db
-    .select({ id: listings.id })
-    .from(listings)
-    .where(eq(listings.authorId, userId));
+  if (!created) return errorState("Já existe um pedido de exclusão em andamento.");
 
-  const listingIds = ownListings.map((row) => row.id);
-
-  const images =
-    listingIds.length === 0
-      ? []
-      : await db
-          .select({ storageKey: listingImages.storageKey })
-          .from(listingImages)
-          .where(inArray(listingImages.listingId, listingIds));
-
-  await db.transaction(async (tx) => {
-    // As conversas sobrevivem porque `conversations.listing_id` é SET NULL.
-    if (listingIds.length > 0) {
-      await tx.delete(listings).where(inArray(listings.id, listingIds));
-    }
-
-    await tx.delete(favorites).where(eq(favorites.userId, userId));
-    await tx.delete(profiles).where(eq(profiles.userId, userId));
-    await tx.delete(account).where(eq(account.userId, userId));
-    await tx.delete(session).where(eq(session.userId, userId));
-
-    await tx
-      .update(user)
-      .set({
-        name: "Membro removido",
-        // O domínio `.invalid` é reservado pela RFC 2606 e nunca resolve, então
-        // o endereço não pode colidir com o de ninguém nem receber mensagem.
-        email: `removido-${randomUUID()}@removido.invalid`,
-        emailVerified: false,
-        image: null,
-      })
-      .where(eq(user.id, userId));
-  });
-
-  // Fora da transação: apagar arquivo não é reversível junto com o banco, e uma
-  // falha aqui deixa arquivo órfão, não dado pessoal no ar — as linhas já foram.
-  for (const image of images) {
-    if (image.storageKey) await removeImage(image.storageKey);
-  }
-
-  // Apagar as linhas de `session` não basta: o Better Auth guarda a sessão em
-  // cookie por cinco minutos para poupar consulta ao banco (ver
-  // docs/seguranca.md), e sem encerrar de verdade a pessoa seguiria navegando
-  // como se a conta existisse. `signOut` limpa o cookie.
+  // A sessão acaba aqui: quem pediu para sair não fica logado. Para cancelar,
+  // entra de novo — o que é, por si, uma confirmação de que a conta é sua.
   await auth.api.signOut({ headers: await headers() });
 
   revalidatePath("/", "layout");
-  redirect("/?conta=excluida");
+  redirect("/?conta=exclusao-agendada");
+}
+
+/** Cancela um pedido de exclusão ainda dentro do prazo. */
+export async function cancelAccountDeletion(
+  _prev: ActionState,
+  _formData: FormData,
+): Promise<ActionState> {
+  const current = await getSession();
+  if (!current) return errorState("Entre na sua conta para continuar.");
+
+  const [cancelled] = await db
+    .update(accountDeletions)
+    .set({ cancelledAt: new Date() })
+    .where(
+      and(
+        eq(accountDeletions.userId, current.user.id),
+        isNull(accountDeletions.cancelledAt),
+        isNull(accountDeletions.completedAt),
+      ),
+    )
+    .returning({ id: accountDeletions.id });
+
+  if (!cancelled) return errorState("Não há pedido de exclusão em andamento.");
+
+  revalidatePath("/", "layout");
+
+  return successState("Exclusão cancelada. Sua conta continua ativa.");
 }

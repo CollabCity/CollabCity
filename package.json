@@ -28,6 +28,7 @@
     "db:push": "dotenv -e .env.local -- drizzle-kit push",
     "db:studio": "dotenv -e .env.local -- drizzle-kit studio",
     "db:seed": "dotenv -e .env.local -- tsx src/db/seed.ts",
+    "db:purge": "dotenv -e .env.local -- tsx src/db/purge.ts",
     "db:e2e": "tsx e2e/prepare-database.ts",
     "db:reset": "docker compose down -v && docker compose up -d --wait && pnpm db:migrate && pnpm db:seed",
     "check": "pnpm lint && pnpm typecheck && pnpm test"

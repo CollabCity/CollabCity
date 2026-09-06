@@ -5,18 +5,18 @@ import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { deleteAccount } from "@/server/actions/account";
+import { requestAccountDeletion } from "@/server/actions/account";
 import { idleState } from "@/server/actions/types";
 
 /**
- * Exclusão de conta, atrás de duas barreiras.
+ * Pedido de exclusão, atrás de duas barreiras.
  *
- * A primeira é abrir o formulário; a segunda é digitar o próprio e-mail. A ação
- * é irreversível, e um botão vermelho sozinho não é decisão suficiente para
- * isso — nem protege de um clique errado.
+ * A primeira é abrir o formulário; a segunda é digitar o próprio e-mail. O
+ * prazo de arrependimento protege de quem mudou de ideia; estas duas protegem
+ * do clique errado, que é problema diferente.
  */
 export function DeleteAccountForm({ email }: { email: string }) {
-  const [state, formAction] = useActionState(deleteAccount, idleState);
+  const [state, formAction] = useActionState(requestAccountDeletion, idleState);
   const [open, setOpen] = useState(false);
 
   if (!open) {
@@ -64,7 +64,7 @@ function ConfirmButton() {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" size="sm" variant="destructive" disabled={pending}>
-      {pending ? "Excluindo..." : "Excluir permanentemente"}
+      {pending ? "Agendando..." : "Agendar exclusão"}
     </Button>
   );
 }

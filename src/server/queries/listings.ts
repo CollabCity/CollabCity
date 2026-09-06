@@ -1,6 +1,7 @@
 import { and, desc, eq, isNotNull, type SQL, sql } from "drizzle-orm";
 import { db } from "@/db";
 import {
+  accountDeletions,
   categories,
   favorites,
   listingImages,
@@ -14,17 +15,24 @@ import type { SearchParams } from "@/lib/validations/listing";
 export const PAGE_SIZE = 12;
 
 /**
- * Exclui anúncios de contas suspensas.
+ * Exclui anúncios de contas suspensas ou com exclusão agendada.
  *
- * A suspensão precisa tirar o conteúdo do ar, e não só barrar a pessoa de
- * entrar: sem isto, uma conta suspensa por golpe continuaria com os anúncios
- * dela no topo da busca.
+ * São duas situações com a mesma consequência. A suspensão precisa tirar o
+ * conteúdo do ar, e não só barrar a pessoa de entrar — sem isto, uma conta
+ * suspensa por golpe continuaria com os anúncios no topo da busca. E quem pediu
+ * para sair não deve continuar anunciando durante o prazo de arrependimento:
+ * ela pediu para sumir, e sumir começa agora.
  */
-function authorNotSuspended(): SQL {
+function authorIsActive(): SQL {
   return sql`NOT EXISTS (
     SELECT 1 FROM ${suspensions}
     WHERE ${suspensions.userId} = ${listings.authorId}
       AND ${suspensions.liftedAt} IS NULL
+  ) AND NOT EXISTS (
+    SELECT 1 FROM ${accountDeletions}
+    WHERE ${accountDeletions.userId} = ${listings.authorId}
+      AND ${accountDeletions.cancelledAt} IS NULL
+      AND ${accountDeletions.completedAt} IS NULL
   )`;
 }
 
@@ -72,7 +80,7 @@ export async function searchListings(params: SearchParams) {
     ? originPoint(params.latitude as number, params.longitude as number)
     : null;
 
-  const conditions: SQL[] = [eq(listings.status, "open"), authorNotSuspended()];
+  const conditions: SQL[] = [eq(listings.status, "open"), authorIsActive()];
 
   if (params.q) conditions.push(sql`${listings.searchVector} @@ ${textQuery(params.q)}`);
   if (params.category) conditions.push(eq(categories.slug, params.category));

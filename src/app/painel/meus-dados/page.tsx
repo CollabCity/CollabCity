@@ -1,10 +1,14 @@
 import { DownloadIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { CancelDeletionForm } from "@/components/cancel-deletion-form";
 import { DeleteAccountForm } from "@/components/delete-account-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { formatDeadline } from "@/lib/account-deletion";
+import { env } from "@/lib/env";
 import { requireSession } from "@/lib/session";
+import { pendingDeletion } from "@/server/queries/account-deletion";
 
 export const metadata: Metadata = { title: "Meus dados" };
 
@@ -29,6 +33,7 @@ const PERMANECE = [
  */
 export default async function MyDataPage() {
   const session = await requireSession();
+  const deletion = await pendingDeletion(session.user.id);
 
   return (
     <section className="max-w-3xl space-y-8">
@@ -70,9 +75,26 @@ export default async function MyDataPage() {
           <div className="space-y-1">
             <h2 className="font-semibold text-xl tracking-tight">Excluir minha conta</h2>
             <p className="text-muted-foreground text-sm leading-relaxed">
-              A exclusão é imediata e não tem volta. Baixe seus dados antes, se quiser guardá-los.
+              {deletion
+                ? "Sua conta está marcada para exclusão. Até a data abaixo, você pode voltar atrás."
+                : `O pedido agenda a exclusão para daqui a ${env.ACCOUNT_DELETION_GRACE_DAYS} dias. Seus anúncios saem do ar na hora, e nesse período você pode cancelar.`}
             </p>
           </div>
+
+          {deletion && (
+            <div className="space-y-3 rounded-lg border border-destructive/40 p-4">
+              <p className="text-sm leading-relaxed">
+                Exclusão marcada para{" "}
+                <strong>
+                  <time dateTime={deletion.scheduledFor.toISOString()}>
+                    {deletion.scheduledFor.toLocaleDateString("pt-BR")}
+                  </time>
+                </strong>{" "}
+                — {formatDeadline(deletion.scheduledFor)}. Seus anúncios já saíram da busca.
+              </p>
+              <CancelDeletionForm />
+            </div>
+          )}
 
           <div className="grid gap-5 sm:grid-cols-2">
             <div className="space-y-2">
@@ -107,7 +129,7 @@ export default async function MyDataPage() {
             anonimizado deixa de ser dado pessoal.
           </p>
 
-          <DeleteAccountForm email={session.user.email} />
+          {!deletion && <DeleteAccountForm email={session.user.email} />}
         </CardContent>
       </Card>
 
