@@ -64,7 +64,7 @@ export async function getPublishedReviews(subjectId: string, limit = 20) {
     .from(reviews)
     .innerJoin(user, eq(user.id, reviews.authorId))
     .innerJoin(conversations, eq(conversations.id, reviews.conversationId))
-    .innerJoin(listings, eq(listings.id, conversations.listingId))
+    .leftJoin(listings, eq(listings.id, conversations.listingId))
     .where(and(eq(reviews.subjectId, subjectId), isPublished()))
     .orderBy(desc(reviews.createdAt))
     .limit(limit);

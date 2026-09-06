@@ -24,6 +24,7 @@ const SECTIONS = [
       "Medição e publicidade só carregam se você aceitar. Recusar não tira nenhuma funcionalidade.",
       "A escolha fica em um cookie por seis meses e pode ser trocada a qualquer momento pelo link “Cookies e privacidade”, no rodapé.",
       "Você pode editar ou apagar seus anúncios e seu perfil a qualquer momento.",
+      "Você pode baixar tudo o que guardamos sobre você, em JSON, e excluir sua conta — os dois em Painel › Meus dados.",
     ],
   },
   {
@@ -97,8 +98,16 @@ export default function PrivacyPage() {
         <p className="leading-relaxed">
           Esta página descreve o funcionamento do serviço e{" "}
           <strong>não substitui uma política de privacidade formal</strong>, que ainda não existe e
-          precisa de revisão jurídica. Também não há, por enquanto, exportação automática dos seus
-          dados nem exclusão de conta pela interface — os dois estão no roteiro do projeto.
+          precisa de revisão jurídica.
+        </p>
+        <p className="leading-relaxed">
+          A exclusão de conta <strong>anonimiza</strong> em vez de apagar as mensagens que você
+          enviou e as avaliações que você escreveu: elas pertencem também a quem estava do outro
+          lado, e apagá-las tiraria o histórico dessa pessoa.{" "}
+          <Link href="/painel/meus-dados" className="font-medium underline underline-offset-2">
+            A tela de exclusão
+          </Link>{" "}
+          detalha item por item o que some e o que fica.
         </p>
         <p className="leading-relaxed">
           Sobre segurança nas negociações, veja{" "}

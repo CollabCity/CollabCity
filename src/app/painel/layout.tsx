@@ -8,6 +8,7 @@ const TABS = [
   { href: "/painel/salvos", label: "Salvos" },
   { href: "/painel/perfil", label: "Perfil" },
   { href: "/painel/decisoes", label: "Decisões" },
+  { href: "/painel/meus-dados", label: "Meus dados" },
 ] as const;
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {

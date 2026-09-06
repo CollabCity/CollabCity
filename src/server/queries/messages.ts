@@ -29,7 +29,7 @@ export async function getConversationsForUser(userId: string) {
       )`,
     })
     .from(conversations)
-    .innerJoin(listings, eq(listings.id, conversations.listingId))
+    .leftJoin(listings, eq(listings.id, conversations.listingId))
     .innerJoin(requester, eq(requester.id, conversations.requesterId))
     .innerJoin(owner, eq(owner.id, conversations.ownerId))
     .where(or(eq(conversations.ownerId, userId), eq(conversations.requesterId, userId)))
@@ -50,7 +50,7 @@ export async function getConversation(conversationId: string, userId: string) {
       requesterId: conversations.requesterId,
     })
     .from(conversations)
-    .innerJoin(listings, eq(listings.id, conversations.listingId))
+    .leftJoin(listings, eq(listings.id, conversations.listingId))
     .where(
       and(
         eq(conversations.id, conversationId),

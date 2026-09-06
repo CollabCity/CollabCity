@@ -50,6 +50,13 @@
       "when": 1788662613021,
       "tag": "0006_daffy_nocturne",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1788667036087,
+      "tag": "0007_brainy_swarm",
+      "breakpoints": true
     }
   ]
 }

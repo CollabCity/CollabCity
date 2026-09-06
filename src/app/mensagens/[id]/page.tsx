@@ -43,9 +43,14 @@ export default async function ConversationPage({ params }: PageProps) {
           </Link>
         </Button>
         <h1 className="font-semibold text-xl tracking-tight">
-          <Link href={`/anuncios/${conversation.listingId}`} className="hover:underline">
-            {conversation.listingTitle}
-          </Link>
+          {/* O anúncio pode ter sido removido; a conversa sobrevive a ele. */}
+          {conversation.listingId && conversation.listingTitle ? (
+            <Link href={`/anuncios/${conversation.listingId}`} className="hover:underline">
+              {conversation.listingTitle}
+            </Link>
+          ) : (
+            <span className="text-muted-foreground">Anúncio removido</span>
+          )}
         </h1>
       </header>
 

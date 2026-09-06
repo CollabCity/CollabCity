@@ -48,7 +48,9 @@ export default async function MessagesPage() {
                         </time>
                       </div>
                     </div>
-                    <p className="text-muted-foreground text-sm">{conversation.listingTitle}</p>
+                    <p className="text-muted-foreground text-sm">
+                      {conversation.listingTitle ?? "Anúncio removido"}
+                    </p>
                     {conversation.lastMessage && (
                       <p className="truncate text-muted-foreground text-sm">
                         {conversation.lastMessage}

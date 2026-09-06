@@ -11,9 +11,15 @@ export const conversations = pgTable(
   "conversations",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    listingId: uuid("listing_id")
-      .notNull()
-      .references(() => listings.id, { onDelete: "cascade" }),
+    /**
+     * Anúncio que originou a conversa, ou nulo se ele foi removido.
+     *
+     * `SET NULL`, e não cascata: apagar um anúncio não pode destruir a conversa,
+     * porque metade dela é da outra pessoa. Sem isso, excluir a própria conta
+     * apagaria o histórico de quem conversou com você — o direito de um viraria
+     * perda do outro.
+     */
+    listingId: uuid("listing_id").references(() => listings.id, { onDelete: "set null" }),
     /** Quem iniciou o contato. */
     requesterId: text("requester_id")
       .notNull()

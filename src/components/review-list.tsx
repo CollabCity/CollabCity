@@ -13,7 +13,8 @@ type Review = {
   authorId: string;
   authorName: string;
   authorImage: string | null;
-  listingTitle: string;
+  /** Nulo quando o anúncio que originou a conversa foi removido. */
+  listingTitle: string | null;
 };
 
 export function ReviewList({
@@ -44,8 +45,7 @@ export function ReviewList({
                       <time dateTime={review.createdAt.toISOString()}>
                         {review.createdAt.toLocaleDateString("pt-BR")}
                       </time>
-                      {" · "}
-                      {review.listingTitle}
+                      {review.listingTitle ? ` · ${review.listingTitle}` : " · anúncio removido"}
                     </p>
                   </div>
                 </div>
