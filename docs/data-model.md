@@ -194,6 +194,12 @@ Use `SET enable_seqscan = off` para confirmar que o índice está disponível.
 | `reports.listing_id` / `review_id` / `conversation_id` | `CASCADE` | Conteúdo removido leva junto as denúncias sobre ele |
 | `reports.resolved_by` → `user` | `SET NULL` | A decisão sobrevive à saída de quem moderou |
 
+`conversations.listing_id` é **anulável**, com `ON DELETE SET NULL`. Não é descuido: apagar um
+anúncio não pode destruir a conversa, porque metade dela é da outra pessoa. É o que torna possível
+excluir a própria conta sem levar junto o histórico de quem conversou com você — ver a
+[ADR-0023](./decisions/0023-exportacao-e-exclusao-de-conta.md). Toda consulta que junta as duas
+tabelas precisa de `LEFT JOIN`.
+
 A restrição `conversations_listing_requester_key` garante **uma conversa por par (anúncio,
 interessado)**. É ela que permite ao `startConversation` usar `ON CONFLICT DO UPDATE` e ser
 idempotente: responder duas vezes ao mesmo anúncio continua a conversa em vez de criar outra.

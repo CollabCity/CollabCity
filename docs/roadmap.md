@@ -97,10 +97,11 @@ não que seja inofensivo em todo decodificador. Reprocessar exigiria `sharp`, de
 - **Paginação por cursor.** A busca usa `LIMIT/OFFSET`, que degrada em páginas profundas. Com o
   volume atual não importa; com volume real, importaria.
 
-### Direitos da LGPD sem interface
+### Exclusão sem prazo de arrependimento
 
-Não há exportação dos próprios dados nem exclusão de conta pela interface. Os dois são direitos do
-titular e hoje dependem de pedido manual. A página `/privacidade` declara a lacuna.
+A exclusão de conta é imediata e não tem volta. Um período de carência é prática comum contra o
+arrependimento, e adia o efeito de um direito que a lei trata como exercível — a
+[ADR-0023](./decisions/0023-exportacao-e-exclusao-de-conta.md) registra a escolha.
 
 ### Política de privacidade e termos de uso formais
 
