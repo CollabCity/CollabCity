@@ -53,3 +53,4 @@ O que melhorou, o que piorou, e o que passou a ser obrigatório manter.
 | [0019](./0019-imagens-nos-anuncios.md) | Imagens nos anúncios | aceita |
 | [0020](./0020-suspensao-de-contas.md) | Suspensão de contas, restrita à administração | aceita |
 | [0021](./0021-contestacao-de-decisoes.md) | Contestação de decisões da moderação | aceita |
+| [0022](./0022-medicao-e-publicidade-com-consentimento.md) | Medição e publicidade com consentimento | aceita |

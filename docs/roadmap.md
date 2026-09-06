@@ -97,6 +97,24 @@ não que seja inofensivo em todo decodificador. Reprocessar exigiria `sharp`, de
 - **Paginação por cursor.** A busca usa `LIMIT/OFFSET`, que degrada em páginas profundas. Com o
   volume atual não importa; com volume real, importaria.
 
+### Direitos da LGPD sem interface
+
+Não há exportação dos próprios dados nem exclusão de conta pela interface. Os dois são direitos do
+titular e hoje dependem de pedido manual. A página `/privacidade` declara a lacuna.
+
+### Política de privacidade e termos de uso formais
+
+`/seguranca` e `/privacidade` descrevem o funcionamento e dizem de si mesmas que não substituem os
+documentos. Falta escrevê-los, com revisão jurídica.
+
+### Monetização além da publicidade
+
+Publicidade paga por audiência, e a plataforma tem transações, não audiência: a R$ 5 por mil
+visualizações, mil reais por mês exigiriam duzentas mil visualizações. Duas alternativas de melhor
+encaixe estão desenhadas e não implementadas — **anúncio destacado**, restrito a anúncios `paid`
+para que doação nunca dispute por dinheiro, e **plano de organizações**, que já é item de produto
+aqui. Ver [ADR-0022](./decisions/0022-medicao-e-publicidade-com-consentimento.md).
+
 ## Fora de escopo
 
 - **Pagamentos.** A plataforma registra que uma troca é paga, mas não intermedia valores. Fazê-lo

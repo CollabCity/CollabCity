@@ -79,6 +79,14 @@ passam antes de qualquer escrita. É um ponto só, em vez de uma checagem por a�
 suspensas também saem da busca e do perfil. Ver a
 [ADR-0020](./decisions/0020-suspensao-de-contas.md).
 
+## Terceiros
+
+Google Analytics e AdSense só carregam depois do consentimento de quem visita, e a escolha vive em
+cookie para que o servidor também a respeite — quem recusa não recebe nem a marcação do anúncio. A
+base legal e o desenho estão na
+[ADR-0022](./decisions/0022-medicao-e-publicidade-com-consentimento.md); o que é coletado está na
+página `/privacidade` do produto.
+
 ## Arquivos enviados
 
 Imagens são validadas pelos **bytes**, nunca pelo `Content-Type` declarado pelo navegador, e SVG é
