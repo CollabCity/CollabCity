@@ -69,6 +69,15 @@ if (updated.length === 0) return errorState("Anúncio não encontrado.");
 Ler o dono e depois gravar abriria uma janela entre as duas operações e dependeria de ninguém
 esquecer a checagem. Aqui, sem linha correspondente, nada acontece.
 
+## Exclusão de conta
+
+O pedido agenda o expurgo para daqui a `ACCOUNT_DELETION_GRACE_DAYS` dias (30 por padrão) e tira o
+conteúdo do ar na hora. A execução depende de uma chamada externa a `/api/manutencao/expurgo`,
+protegida por `MAINTENANCE_SECRET` — sem o segredo a rota responde **404**, e não 401, porque um
+endereço destrutivo que responde "não autorizado" já confirma que existe. A comparação do segredo é
+de tempo constante. Ver a
+[ADR-0024](./decisions/0024-prazo-de-arrependimento-e-politica-de-privacidade.md).
+
 ## Papéis e suspensão
 
 A equipe vive em `moderators`, com dois papéis: `moderator` resolve denúncias, `admin` faz isso e

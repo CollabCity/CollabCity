@@ -97,16 +97,18 @@ não que seja inofensivo em todo decodificador. Reprocessar exigiria `sharp`, de
 - **Paginação por cursor.** A busca usa `LIMIT/OFFSET`, que degrada em páginas profundas. Com o
   volume atual não importa; com volume real, importaria.
 
-### Exclusão sem prazo de arrependimento
+### Expurgo depende de agendador externo
 
-A exclusão de conta é imediata e não tem volta. Um período de carência é prática comum contra o
-arrependimento, e adia o efeito de um direito que a lei trata como exercível — a
-[ADR-0023](./decisions/0023-exportacao-e-exclusao-de-conta.md) registra a escolha.
+O prazo de arrependimento só é executado quando alguém chama `/api/manutencao/expurgo`. A esteira
+do GitHub faz isso uma vez por dia, mas **em uma instância sem os segredos configurados nenhuma
+exclusão acontece** — a linha fica pendente e a pessoa acredita que foi excluída. Ver
+[ADR-0024](./decisions/0024-prazo-de-arrependimento-e-politica-de-privacidade.md).
 
-### Política de privacidade e termos de uso formais
+### Termos de uso formais
 
-`/seguranca` e `/privacidade` descrevem o funcionamento e dizem de si mesmas que não substituem os
-documentos. Falta escrevê-los, com revisão jurídica.
+`/privacidade` já é uma política estruturada, com bases legais e versão. Faltam os **termos de
+uso**, e as duas páginas seguem dizendo de si mesmas que não substituem revisão jurídica antes de
+uso comercial.
 
 ### Monetização além da publicidade
 

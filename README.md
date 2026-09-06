@@ -95,6 +95,7 @@ O passo a passo completo, incluindo solução de problemas, está em
 | `pnpm db:generate` | Gera uma migração a partir do schema |
 | `pnpm db:migrate` / `pnpm db:seed` | Aplica migrações e popula o banco |
 | `pnpm db:reset` | Derruba, recria, migra e popula do zero |
+| `pnpm db:purge` | Expurga contas cujo prazo de exclusão venceu |
 | `pnpm db:e2e` | Cria e repopula o banco dos testes de ponta a ponta |
 | `pnpm db:studio` | Abre o Drizzle Studio |
 

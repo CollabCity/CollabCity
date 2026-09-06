@@ -55,3 +55,4 @@ O que melhorou, o que piorou, e o que passou a ser obrigatório manter.
 | [0021](./0021-contestacao-de-decisoes.md) | Contestação de decisões da moderação | aceita |
 | [0022](./0022-medicao-e-publicidade-com-consentimento.md) | Medição e publicidade com consentimento | aceita |
 | [0023](./0023-exportacao-e-exclusao-de-conta.md) | Exportação e exclusão de conta | aceita |
+| [0024](./0024-prazo-de-arrependimento-e-politica-de-privacidade.md) | Prazo de arrependimento e política de privacidade | aceita |
