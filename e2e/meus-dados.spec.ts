@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { expect, test } from "@playwright/test";
-import { ACCOUNTS, PASSWORD, storageStatePath } from "./accounts";
+import { ACCOUNTS, ANONYMOUS, PASSWORD, storageStatePath } from "./accounts";
 
 /**
  * Os direitos do art. 18 da LGPD: acesso, portabilidade e eliminação.
@@ -9,6 +9,13 @@ import { ACCOUNTS, PASSWORD, storageStatePath } from "./accounts";
  * exclui — e o terceiro confere o que sobrou do lado dela.
  */
 test.describe.configure({ mode: "serial" });
+/**
+ * Só em um projeto. Estes fluxos mexem em estado **global** do banco — o índice
+ * parcial admite uma suspensão ativa por conta, e o expurgo varre todas as
+ * contas vencidas —, então `chromium` e `mobile` rodando em paralelo derrubam um
+ * ao outro. O comportamento aqui não depende do formato da tela.
+ */
+test.skip(({ isMobile }) => Boolean(isMobile), "fluxo com estado global do banco");
 
 test.describe("exportação", () => {
   test.use({ storageState: storageStatePath("ana") });
@@ -46,64 +53,126 @@ test.describe("exportação", () => {
   });
 });
 
-test("excluir a conta anonimiza sem destruir o histórico de quem ficou", async ({
-  page,
-  browser,
-}, testInfo) => {
-  const sufixo = `${testInfo.project.name}-${Date.now()}`;
-  const visitante = {
-    nome: `Passageiro ${sufixo}`,
-    email: `passageiro-${sufixo}@exemplo.test`,
-  };
-  const mensagem = `Oi! Tenho interesse, ainda está disponível? (${sufixo})`;
+test.describe("exclusão", () => {
+  // Estado com o consentimento já respondido. Sem ele o banner aparece, e além
+  // de interceptar cliques ele quebra buscas por rótulo: `getByLabel` casa por
+  // substring, e "publicidade" no `aria-label` do banner contém "cidade".
+  test.use({ storageState: ANONYMOUS });
 
-  // 1. Alguém se cadastra e conversa com a Ana.
-  await page.goto("/cadastro");
-  await page.getByLabel("Nome").fill(visitante.nome);
-  await page.getByLabel("E-mail").fill(visitante.email);
-  await page.getByLabel("Senha").fill(PASSWORD);
-  await page.getByRole("button", { name: "Criar conta" }).click();
-  await expect(page).toHaveURL(/\/painel/);
+  test("a exclusão espera o prazo, pode ser cancelada e então expurga", async ({
+    page,
+    browser,
+    request,
+  }, testInfo) => {
+    const sufixo = `${testInfo.project.name}-${Date.now()}`;
+    const visitante = {
+      nome: `Passageiro ${sufixo}`,
+      email: `passageiro-${sufixo}@exemplo.test`,
+    };
+    const anuncio = `Empresto uma escada de alumínio ${sufixo}`;
+    const mensagem = `Oi! Tenho interesse, ainda está disponível? (${sufixo})`;
 
-  await page.goto("/anuncios");
-  await page
-    .getByRole("link", { name: /matemática/i })
-    .first()
-    .click();
-  await page.getByLabel("Enviar mensagem").fill(mensagem);
-  await page.getByRole("button", { name: "Iniciar conversa" }).click();
-  await expect(page).toHaveURL(/\/mensagens\/[0-9a-f-]{36}/);
+    // 1. Alguém se cadastra, publica e conversa com a Ana.
+    await page.goto("/cadastro");
+    await page.getByLabel("Nome").fill(visitante.nome);
+    await page.getByLabel("E-mail").fill(visitante.email);
+    await page.getByLabel("Senha").fill(PASSWORD);
+    await page.getByRole("button", { name: "Criar conta" }).click();
+    await expect(page).toHaveURL(/\/painel/);
 
-  // 2. A pessoa exclui a conta, confirmando com o próprio e-mail.
-  await page.goto("/painel/meus-dados");
-  await page.getByRole("button", { name: "Quero excluir minha conta" }).click();
+    await page.goto("/anuncios/novo");
+    await page.getByLabel("Título").fill(anuncio);
+    await page
+      .getByLabel("Descrição")
+      .fill("Escada de três metros parada na garagem. Empresto para quem precisa fazer um reparo.");
+    await page.getByLabel("Cidade").fill("Recife");
+    await page.getByLabel("Latitude").fill("-8.0476");
+    await page.getByLabel("Longitude").fill("-34.8770");
+    await page.getByRole("button", { name: "Publicar" }).click();
+    await expect(page.getByRole("heading", { level: 1, name: anuncio })).toBeVisible();
 
-  // O e-mail errado não serve.
-  await page.getByLabel(/para confirmar/).fill("outro@exemplo.test");
-  await page.getByRole("button", { name: "Excluir permanentemente" }).click();
-  // Pelo texto, e não por `role="alert"`: o Toaster do layout também expõe uma
-  // região com esse papel, e o seletor pegaria a dele, vazia.
-  await expect(page.getByText(/exatamente o e-mail/)).toBeVisible();
+    await page.goto("/anuncios");
+    await page
+      .getByRole("link", { name: /matemática/i })
+      .first()
+      .click();
+    await page.getByLabel("Enviar mensagem").fill(mensagem);
+    await page.getByRole("button", { name: "Iniciar conversa" }).click();
+    await expect(page).toHaveURL(/\/mensagens\/[0-9a-f-]{36}/);
 
-  await page.getByLabel(/para confirmar/).fill(visitante.email);
-  await page.getByRole("button", { name: "Excluir permanentemente" }).click();
+    // 2. Pede a exclusão. O e-mail errado não serve.
+    await page.goto("/painel/meus-dados");
+    await page.getByRole("button", { name: "Quero excluir minha conta" }).click();
+    await page.getByLabel(/para confirmar/).fill("outro@exemplo.test");
+    await page.getByRole("button", { name: "Agendar exclusão" }).click();
+    // Pelo texto, e não por `role="alert"`: o Toaster do layout também expõe uma
+    // região com esse papel, e o seletor pegaria a dele, vazia.
+    await expect(page.getByText(/exatamente o e-mail/)).toBeVisible();
 
-  // A sessão acaba junto: o painel volta a pedir login.
-  await expect(page).toHaveURL(/\/(\?conta=excluida)?$/, { timeout: 15_000 });
-  await page.goto("/painel");
-  await expect(page).toHaveURL(/\/entrar/);
+    await page.getByLabel(/para confirmar/).fill(visitante.email);
+    await page.getByRole("button", { name: "Agendar exclusão" }).click();
 
-  // 3. Do lado da Ana, a conversa continua inteira — com o autor anonimizado.
-  const anaContext = await browser.newContext({ storageState: storageStatePath("ana") });
-  const ana = await anaContext.newPage();
-  await ana.goto("/mensagens");
+    // A sessão acaba junto: quem pediu para sair não fica logado.
+    await expect(page).toHaveURL(/\/(\?conta=exclusao-agendada)?$/, { timeout: 15_000 });
+    await page.goto("/painel");
+    await expect(page).toHaveURL(/\/entrar/);
 
-  const conversa = ana.getByRole("link").filter({ hasText: "Membro removido" }).first();
-  await expect(conversa).toBeVisible();
-  await conversa.click();
+    // 3. O anúncio sai do ar imediatamente, antes de qualquer expurgo.
+    await page.goto(`/anuncios?q=${encodeURIComponent(`escada de alumínio ${sufixo}`)}`);
+    await expect(page.getByRole("main").getByText(anuncio)).toBeHidden();
 
-  // A mensagem sobrevive; o nome de quem escreveu, não.
-  await expect(ana.getByText(mensagem)).toBeVisible();
-  await expect(ana.getByText(visitante.nome)).toBeHidden();
-  await anaContext.close();
+    // 4. Dentro do prazo, dá para voltar atrás.
+    await page.goto("/entrar");
+    await page.getByLabel("E-mail").fill(visitante.email);
+    await page.getByLabel("Senha").fill(PASSWORD);
+    await page.getByRole("button", { name: "Entrar" }).click();
+    await expect(page).toHaveURL(/\/painel/);
+
+    await page.goto("/painel/meus-dados");
+    await expect(page.getByText("Exclusão marcada para")).toBeVisible();
+    await page.getByRole("button", { name: /Cancelar exclusão/ }).click();
+    await expect(page.getByRole("button", { name: "Quero excluir minha conta" })).toBeVisible({
+      timeout: 15_000,
+    });
+
+    // O anúncio volta.
+    await page.goto(`/anuncios?q=${encodeURIComponent(`escada de alumínio ${sufixo}`)}`);
+    await expect(page.getByRole("main").getByText(anuncio)).toBeVisible();
+
+    // 5. Pede de novo e deixa o expurgo rodar.
+    await page.goto("/painel/meus-dados");
+    await page.getByRole("button", { name: "Quero excluir minha conta" }).click();
+    await page.getByLabel(/para confirmar/).fill(visitante.email);
+    await page.getByRole("button", { name: "Agendar exclusão" }).click();
+    await expect(page).toHaveURL(/\/(\?conta=exclusao-agendada)?$/, { timeout: 15_000 });
+
+    // Sem o segredo, a rota de manutenção não existe.
+    const semSegredo = await request.post("/api/manutencao/expurgo");
+    expect(semSegredo.status()).toBe(404);
+
+    const expurgo = await request.post("/api/manutencao/expurgo", {
+      headers: { Authorization: "Bearer segredo-de-teste" },
+    });
+    expect(expurgo.status()).toBe(200);
+
+    // 6. As credenciais deixam de valer.
+    await page.goto("/entrar");
+    await page.getByLabel("E-mail").fill(visitante.email);
+    await page.getByLabel("Senha").fill(PASSWORD);
+    await page.getByRole("button", { name: "Entrar" }).click();
+    await expect(page.locator("form").getByRole("alert")).toContainText("inválidos");
+
+    // 7. Do lado da Ana, a conversa continua inteira — com o autor anonimizado.
+    const anaContext = await browser.newContext({ storageState: storageStatePath("ana") });
+    const ana = await anaContext.newPage();
+    await ana.goto("/mensagens");
+
+    const conversa = ana.getByRole("link").filter({ hasText: "Membro removido" }).first();
+    await expect(conversa).toBeVisible();
+    await conversa.click();
+
+    await expect(ana.getByText(mensagem)).toBeVisible();
+    await expect(ana.getByText(visitante.nome)).toBeHidden();
+    await anaContext.close();
+  });
 });

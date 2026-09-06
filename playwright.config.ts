@@ -74,6 +74,10 @@ export default defineConfig({
           NEXT_PUBLIC_GA_ID: "G-TESTE0000",
           NEXT_PUBLIC_ADSENSE_CLIENT: "ca-pub-0000000000000000",
           NEXT_PUBLIC_ADSENSE_SLOT: "0000000000",
+          // Sem prazo de arrependimento, para que o teste possa exercitar o
+          // expurgo sem esperar trinta dias nem mexer no relógio do banco.
+          ACCOUNT_DELETION_GRACE_DAYS: "0",
+          MAINTENANCE_SECRET: "segredo-de-teste",
         },
       },
 });

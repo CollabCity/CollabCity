@@ -10,6 +10,13 @@ import { ACCOUNTS, storageStatePath } from "./accounts";
  * dois arquivos mexendo na mesma pessoa em paralelo derrubariam um ao outro.
  */
 test.describe.configure({ mode: "serial" });
+/**
+ * Só em um projeto. Estes fluxos mexem em estado **global** do banco — o índice
+ * parcial admite uma suspensão ativa por conta, e o expurgo varre todas as
+ * contas vencidas —, então `chromium` e `mobile` rodando em paralelo derrubam um
+ * ao outro. O comportamento aqui não depende do formato da tela.
+ */
+test.skip(({ isMobile }) => Boolean(isMobile), "fluxo com estado global do banco");
 
 const MOTIVO = "Pediu pagamento antecipado em três conversas diferentes, sem entregar nada.";
 const ALEGACAO =
