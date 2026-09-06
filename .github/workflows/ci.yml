@@ -91,14 +91,10 @@ jobs:
       - name: Instalar navegador
         run: pnpm exec playwright install --with-deps chromium
 
-      - name: Migrar e popular o banco
-        run: |
-          pnpm exec tsx src/db/migrate.ts
-          pnpm exec tsx src/db/seed.ts
-
-      - name: Build
-        run: pnpm build
-
+      # Migração, seed e build ficam a cargo do Playwright: `e2e/global-setup.ts`
+      # cria e popula o banco dedicado, e `webServer` compila com as variáveis
+      # certas. Repetir os passos aqui geraria um build com outra URL pública,
+      # descartado logo em seguida.
       - name: Testes de ponta a ponta
         run: pnpm exec playwright test --project=chromium
 

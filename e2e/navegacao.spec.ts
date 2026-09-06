@@ -45,7 +45,7 @@ test("um anúncio abre com título, localização e autoria", async ({ page }) =
 
   await expect(page).toHaveURL(/\/anuncios\/[0-9a-f-]{36}/);
   await expect(page.getByRole("heading", { level: 1, name: title })).toBeVisible();
-  await expect(page.getByText("Publicou este anúncio")).toBeVisible();
+  await expect(page.getByText("Ver perfil e avaliações")).toBeVisible();
 });
 
 test("publicar exige autenticação", async ({ page }) => {
