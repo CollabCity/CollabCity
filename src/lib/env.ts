@@ -23,6 +23,13 @@ export const env = createEnv({
   },
   client: {
     NEXT_PUBLIC_APP_URL: z.url(),
+    /**
+     * Medição e publicidade são opcionais: sem as variáveis, nada carrega e o
+     * banner de consentimento nem aparece. É o padrão em desenvolvimento.
+     */
+    NEXT_PUBLIC_GA_ID: optionalString,
+    NEXT_PUBLIC_ADSENSE_CLIENT: optionalString,
+    NEXT_PUBLIC_ADSENSE_SLOT: optionalString,
   },
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
@@ -41,10 +48,19 @@ export const env = createEnv({
     S3_SECRET_ACCESS_KEY: process.env.S3_SECRET_ACCESS_KEY,
     S3_PUBLIC_URL: process.env.S3_PUBLIC_URL,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+    NEXT_PUBLIC_GA_ID: process.env.NEXT_PUBLIC_GA_ID,
+    NEXT_PUBLIC_ADSENSE_CLIENT: process.env.NEXT_PUBLIC_ADSENSE_CLIENT,
+    NEXT_PUBLIC_ADSENSE_SLOT: process.env.NEXT_PUBLIC_ADSENSE_SLOT,
   },
   emptyStringAsUndefined: false,
   skipValidation: process.env.SKIP_ENV_VALIDATION === "true",
 });
+
+/** Medição e publicidade só existem quando configuradas. */
+export const isMeasurementEnabled = {
+  analytics: Boolean(env.NEXT_PUBLIC_GA_ID),
+  ads: Boolean(env.NEXT_PUBLIC_ADSENSE_CLIENT),
+};
 
 export const isOAuthEnabled = {
   github: Boolean(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET),

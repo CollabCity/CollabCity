@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ConsentReset } from "@/components/consent-banner";
 
 export function SiteFooter() {
   return (
@@ -22,6 +23,10 @@ export function SiteFooter() {
           <Link href="/seguranca" className="text-muted-foreground hover:text-foreground">
             Segurança
           </Link>
+          <Link href="/privacidade" className="text-muted-foreground hover:text-foreground">
+            Privacidade
+          </Link>
+          <ConsentReset />
           <a
             href="https://github.com/CollabCity/CollabCity"
             className="text-muted-foreground hover:text-foreground"

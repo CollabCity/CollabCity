@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Ad } from "@/components/ads";
 import { ContactForm } from "@/components/contact-form";
 import { FavoriteButton } from "@/components/favorite-button";
 import { ReportDialog } from "@/components/report-dialog";
@@ -189,6 +190,8 @@ export default async function ListingPage({ params }: PageProps) {
         </Card>
 
         {!isAuthor && <SafetyNotice context="listing" />}
+
+        <Ad intent={listing.intent} />
 
         {session && !isAuthor && (
           <ReportDialog

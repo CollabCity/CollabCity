@@ -1,9 +1,15 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
+import { AdSenseLoader } from "@/components/ads";
+import { Analytics } from "@/components/analytics";
+import { ConsentBanner } from "@/components/consent-banner";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { ThemeProvider } from "@/components/theme-provider";
+import { allowsAnalytics } from "@/lib/consent";
+import { getConsent } from "@/lib/consent-server";
+import { isMeasurementEnabled } from "@/lib/env";
 import "./globals.css";
 
 const sans = Geist({ variable: "--font-geist-sans", subsets: ["latin"], display: "swap" });
@@ -32,7 +38,13 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const consent = await getConsent();
+
+  // Sem GA nem AdSense configurados não há o que consentir, e perguntar seria
+  // pedir permissão para nada.
+  const needsConsent = isMeasurementEnabled.analytics || isMeasurementEnabled.ads;
+
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <body className={`${sans.variable} ${mono.variable} min-h-dvh font-sans antialiased`}>
@@ -52,7 +64,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <SiteFooter />
           </div>
           <Toaster position="top-center" richColors />
+          {needsConsent && consent === null && <ConsentBanner />}
         </ThemeProvider>
+        <Analytics granted={allowsAnalytics(consent)} />
+        <AdSenseLoader />
       </body>
     </html>
   );
