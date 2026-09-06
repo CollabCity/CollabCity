@@ -69,6 +69,11 @@ export default defineConfig({
           PORT: String(PORT),
           BETTER_AUTH_URL: serverURL,
           NEXT_PUBLIC_APP_URL: serverURL,
+          // Valores de fachada: o que se testa é o consentimento decidir se os
+          // scripts entram na página, não a resposta do Google.
+          NEXT_PUBLIC_GA_ID: "G-TESTE0000",
+          NEXT_PUBLIC_ADSENSE_CLIENT: "ca-pub-0000000000000000",
+          NEXT_PUBLIC_ADSENSE_SLOT: "0000000000",
         },
       },
 });

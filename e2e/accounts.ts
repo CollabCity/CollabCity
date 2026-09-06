@@ -25,5 +25,27 @@ export function storageStatePath(account: AccountName): string {
   return fileURLToPath(new URL(`./.auth/${account}.json`, import.meta.url));
 }
 
-/** Estado explicitamente vazio, para os testes que exercitam o próprio login. */
-export const ANONYMOUS = { cookies: [], origins: [] };
+/**
+ * Cookie de consentimento já decidido, com tudo recusado.
+ *
+ * Vai em **todos** os estados de sessão porque o banner é fixo no rodapé e
+ * intercepta cliques em qualquer coisa perto dele. Sem uma escolha registrada,
+ * ele apareceria em cada teste e transformaria uma decisão de produto em falha
+ * de suíte. O teste do próprio banner usa `SEM_CONSENTIMENTO`.
+ */
+export const CONSENT_COOKIE_STATE = {
+  name: "collabcity-consentimento",
+  value: encodeURIComponent(JSON.stringify({ version: 1, analytics: "denied", ads: "denied" })),
+  domain: "localhost",
+  path: "/",
+  expires: -1,
+  httpOnly: false,
+  secure: false,
+  sameSite: "Lax",
+} as const;
+
+/** Deslogado, mas com o consentimento já respondido. */
+export const ANONYMOUS = { cookies: [CONSENT_COOKIE_STATE], origins: [] };
+
+/** Deslogado e sem nenhuma escolha: é o estado em que o banner deve aparecer. */
+export const SEM_CONSENTIMENTO = { cookies: [], origins: [] };
