@@ -118,11 +118,61 @@ DATABASE_URL="postgresql://..." pnpm exec tsx src/db/migrate.ts
 Isso também obriga migrações a serem compatíveis com a versão anterior do código — o que é a
 prática certa de qualquer forma.
 
+## Expurgo agendado — obrigatório
+
+A exclusão de conta é **agendada**: o pedido marca uma data e o apagamento só acontece quando
+alguém chama `/api/manutencao/expurgo`. **Sem um agendador configurado, nenhuma exclusão é
+executada** — a linha fica pendente para sempre e a pessoa acredita que foi excluída. É a falha mais
+silenciosa deste sistema, e por isso este passo não é opcional.
+
+### Na Vercel, que é o caminho principal
+
+O `vercel.json` já declara o agendamento:
+
+```json
+{ "crons": [{ "path": "/api/manutencao/expurgo", "schedule": "0 4 * * *" }] }
+```
+
+Falta apenas definir a variável de ambiente **`CRON_SECRET`** no projeto, com um valor longo e
+aleatório. A Vercel o injeta como `Authorization: Bearer` nas chamadas agendadas, e a rota aceita
+esse nome além de `MAINTENANCE_SECRET` — assim não é preciso configurar a mesma senha duas vezes.
+
+No plano gratuito o cron roda **uma vez por dia**, com horário garantido apenas dentro da hora, e
+só em UTC. É suficiente: o que se agenda é um prazo de trinta dias.
+
+### Fora da Vercel
+
+`.github/workflows/manutencao.yml` faz o mesmo por `curl`, uma vez por dia. Configure em
+**Settings › Secrets and variables › Actions** do repositório:
+
+| Segredo | Valor |
+| --- | --- |
+| `APP_URL` | endereço público da aplicação |
+| `MAINTENANCE_SECRET` | o mesmo valor definido no ambiente da aplicação |
+
+**Cuidado com uma armadilha do GitHub:** em repositórios públicos, workflows agendados são
+desativados após **60 dias sem commits** — e só commit reinicia o contador, não issue nem pull
+request. Num projeto que fique quieto dois meses, as exclusões param sem aviso na aplicação. É o
+principal motivo de o cron da Vercel ser preferido.
+
+Qualquer outro agendador serve, desde que faça a chamada com o cabeçalho:
+
+```bash
+curl -X POST https://SEU_DOMINIO/api/manutencao/expurgo \
+  -H "Authorization: Bearer $MAINTENANCE_SECRET"
+```
+
+A rota aceita `GET` e `POST` porque os agendadores diferem: a Vercel invoca com `GET`.
+
+Para rodar à mão, com acesso ao banco: `pnpm db:purge`.
+
 ## Verificando o deploy
 
 ```bash
 curl -I https://SEU_DOMINIO/                       # 200
 curl -I https://SEU_DOMINIO/anuncios               # 200
+curl -I https://SEU_DOMINIO/api/manutencao/expurgo # 404 sem o cabeçalho — a rota
+                                                   # não se anuncia a quem não tem o segredo
 curl -I https://SEU_DOMINIO/rota-inexistente       # 404
 curl -s  https://SEU_DOMINIO/robots.txt
 curl -s  https://SEU_DOMINIO/sitemap.xml | head

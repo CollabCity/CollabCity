@@ -32,10 +32,20 @@ uma confirmação de que a conta é sua.
 criariam duas datas, e cancelar resolveria só uma.
 
 **O expurgo é uma rota chamada de fora, não um processo agendado interno.** A premissa de camada
-gratuita da [ADR-0010](./0010-hospedagem-em-camada-gratuita.md) não comporta mais um serviço; quem
-chama é a esteira do GitHub, uma vez por dia. Sem `MAINTENANCE_SECRET` a rota **não existe** —
+gratuita da [ADR-0010](./0010-hospedagem-em-camada-gratuita.md) não comporta mais um serviço, e um
+temporizador interno rodaria uma vez por réplica. Sem segredo configurado a rota **não existe** —
 responde 404, e não "não autorizado", porque um endereço destrutivo que responde 401 já confirma
 que está ali. A comparação do segredo é de tempo constante.
+
+**Quem chama é o cron da Vercel**, declarado em `vercel.json`, porque a ADR-0010 já elege a Vercel
+como plataforma de referência. A rota aceita `GET` além de `POST` porque é assim que a Vercel
+invoca, e aceita `CRON_SECRET` além de `MAINTENANCE_SECRET` porque é o nome que a plataforma injeta
+no cabeçalho — configurar a mesma senha com dois nomes seria convite a divergirem.
+
+**A esteira do GitHub fica como alternativa**, para quem hospeda em outro lugar. Ela não é o
+caminho principal por um motivo concreto: o GitHub **desativa workflows agendados em repositórios
+públicos após 60 dias sem commits**, e só commit reinicia o contador. Num projeto que fique quieto
+dois meses, as exclusões parariam sem qualquer sinal dentro da aplicação.
 
 **O prazo é configurável** (`ACCOUNT_DELETION_GRACE_DAYS`). A escolha é de quem opera, e zero
 desliga o arrependimento — o que só faz sentido em teste, e é o que permite exercitar o expurgo sem
@@ -77,8 +87,9 @@ descrevendo um sistema que não é este. A política foi escrita a partir do que
 ## Consequências
 
 - **Sem o agendador configurado, nenhuma exclusão é executada.** A linha fica pendente para sempre,
-  e a pessoa acredita que foi excluída. O `.env.example` avisa, e o workflow não falha em silêncio:
-  sem os segredos, ele registra que não fez nada.
+  e a pessoa acredita que foi excluída. O `.env.example` avisa, o `docs/deployment.md` traz o passo
+  como obrigatório, e o workflow do GitHub não falha em silêncio: sem os segredos, ele registra que
+  não fez nada. Nada disso substitui verificar depois do primeiro deploy.
 - A regra "conta inativa não mostra anúncio" agora cobre dois casos, suspensão e exclusão
   pendente, em dois lugares — a busca e o perfil público. Uma listagem nova precisa repetí-la.
 - `ACCOUNT_DELETION_GRACE_DAYS=0` desliga o arrependimento. É configuração de teste, e um deploy com

@@ -2,8 +2,13 @@ name: Manutenção
 
 # O expurgo das contas cujo prazo de arrependimento venceu.
 #
-# Fica aqui, e não dentro da aplicação, porque a premissa de camada gratuita
-# não comporta um processo agendado a mais. A esteira já existe e roda de graça.
+# É a ALTERNATIVA ao cron da Vercel, que é o caminho principal (ver vercel.json
+# e docs/deployment.md). Serve a quem hospeda em outro lugar.
+#
+# Atenção: o GitHub desativa workflows agendados em repositórios públicos após
+# 60 dias sem commits — e só commit reinicia o contador. Num projeto que fique
+# quieto dois meses, as exclusões param de ser executadas em silêncio. É o
+# principal motivo de o cron da Vercel ser preferido.
 on:
   schedule:
     # Todo dia às 4h UTC, 1h em Brasília: fora do horário de uso.
@@ -14,9 +19,6 @@ jobs:
   expurgo:
     name: Expurgar contas com prazo vencido
     runs-on: ubuntu-latest
-    # Sem os segredos configurados o passo não roda, em vez de falhar todo dia
-    # em um repositório recém-clonado.
-    if: ${{ github.repository_owner != '' }}
     steps:
       - name: Chamar a rota de manutenção
         env:

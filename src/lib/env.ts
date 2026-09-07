@@ -22,6 +22,12 @@ export const env = createEnv({
      */
     MAINTENANCE_SECRET: optionalString,
     /**
+     * Injetada pela Vercel nas requisições de cron, no cabeçalho
+     * `Authorization: Bearer`. Serve como segredo alternativo para que, lá, não
+     * seja preciso configurar a mesma senha com dois nomes.
+     */
+    CRON_SECRET: optionalString,
+    /**
      * Prazo de arrependimento da exclusão de conta, em dias.
      *
      * Configurável porque a escolha é de quem opera: trinta dias é o padrão
@@ -65,6 +71,7 @@ export const env = createEnv({
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
     MAINTENANCE_SECRET: process.env.MAINTENANCE_SECRET,
+    CRON_SECRET: process.env.CRON_SECRET,
     ACCOUNT_DELETION_GRACE_DAYS: process.env.ACCOUNT_DELETION_GRACE_DAYS,
     STORAGE_DRIVER: process.env.STORAGE_DRIVER,
     S3_ENDPOINT: process.env.S3_ENDPOINT,
