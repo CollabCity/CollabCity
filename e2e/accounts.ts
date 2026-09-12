@@ -35,7 +35,7 @@ export function storageStatePath(account: AccountName): string {
  */
 export const CONSENT_COOKIE_STATE = {
   name: "collabcity-consentimento",
-  value: encodeURIComponent(JSON.stringify({ version: 1, analytics: "denied", ads: "denied" })),
+  value: encodeURIComponent(JSON.stringify({ version: 1, analytics: "denied" })),
   domain: "localhost",
   path: "/",
   expires: -1,

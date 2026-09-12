@@ -6,14 +6,13 @@ const GA = "googletagmanager.com";
 /** Nenhum script de terceiro chega a ser buscado durante os testes. */
 test.beforeEach(async ({ page }) => {
   await page.route(`**/*${GA}/**`, (route) => route.abort());
-  await page.route("**/pagead2.googlesyndication.com/**", (route) => route.abort());
 });
 
 async function scriptsDeTerceiros(page: import("@playwright/test").Page) {
   return page.evaluate(() =>
     Array.from(document.querySelectorAll("script"))
       .map((script) => script.src)
-      .filter((src) => src.includes("googletagmanager") || src.includes("adsbygoogle")),
+      .filter((src) => src.includes("googletagmanager")),
   );
 }
 
@@ -29,7 +28,6 @@ test.describe("sem escolha registrada", () => {
     // O ponto central da implementação: antes da escolha, os scripts não estão
     // na página — não é um sinal de "não rastreie", é ausência de código.
     expect(await scriptsDeTerceiros(page)).toEqual([]);
-    await expect(page.locator('aside[aria-label="Publicidade"]')).toHaveCount(0);
   });
 
   test("recusar não carrega nada, e a escolha persiste", async ({ page }) => {
@@ -76,19 +74,25 @@ test.describe("sem escolha registrada", () => {
   });
 });
 
-test.describe("com publicidade aceita", () => {
+test.describe("sem publicidade", () => {
   test.use({ storageState: SEM_CONSENTIMENTO });
 
-  test("não há publicidade em página de pedido", async ({ page }) => {
+  test("aceitar tudo não traz anúncio nenhum", async ({ page }) => {
+    // A plataforma não exibe publicidade (ADR-0025). O aceite é o estado mais
+    // permissivo que existe, e nem nele aparece anúncio: não sobrou nenhum
+    // interruptor que ligue a publicidade de volta.
     await page.goto("/anuncios");
     await page.getByRole("button", { name: "Aceitar" }).click();
     await expect(page.getByRole("dialog", { name: /Consentimento/ })).toBeHidden();
 
-    // A busca filtrada por pedidos não recebe anúncio, mesmo com consentimento.
+    await expect(page.locator('aside[aria-label="Publicidade"]')).toHaveCount(0);
+    await expect(page.locator("ins.adsbygoogle")).toHaveCount(0);
+
+    // A busca de pedidos era a página que o desenho antigo protegia da
+    // publicidade por regra; hoje não há regra a aplicar, e é a mesma resposta.
     await page.goto("/anuncios?intent=need");
     await expect(page.locator('aside[aria-label="Publicidade"]')).toHaveCount(0);
 
-    // E o detalhe de um pedido também não.
     await page
       .getByRole("link", { name: /notebook/i })
       .first()
