@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ConsentReset } from "@/components/consent-banner";
+import { isDonationEnabled } from "@/lib/env";
 
 export function SiteFooter() {
   return (
@@ -27,6 +28,13 @@ export function SiteFooter() {
             Privacidade
           </Link>
           <ConsentReset />
+          {/* Só aparece onde há canal configurado: um convite a apoiar que leva
+              a uma página inexistente é pior que nenhum convite. */}
+          {isDonationEnabled && (
+            <Link href="/apoie" className="text-muted-foreground hover:text-foreground">
+              Apoie o projeto
+            </Link>
+          )}
           <a
             href="https://github.com/CollabCity/CollabCity"
             className="text-muted-foreground hover:text-foreground"
@@ -37,7 +45,7 @@ export function SiteFooter() {
             href="https://github.com/CollabCity/CollabCity/blob/main/CONTRIBUTING.md"
             className="text-muted-foreground hover:text-foreground"
           >
-            Contribuir
+            Contribuir com código
           </a>
         </nav>
       </div>

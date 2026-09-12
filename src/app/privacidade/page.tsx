@@ -10,8 +10,8 @@ export const metadata: Metadata = {
 };
 
 /** Sobe quando o conteúdo muda de forma que afete quem já leu. */
-const VERSION = "1.0";
-const UPDATED_AT = "6 de setembro de 2026";
+const VERSION = "1.1";
+const UPDATED_AT = "11 de setembro de 2026";
 
 /** Finalidade e base legal de cada grupo de dados, como a LGPD pede. */
 const TREATMENTS = [
@@ -48,8 +48,9 @@ const TREATMENTS = [
     basis: "Execução de contrato (art. 7º, V)",
   },
   {
-    data: "Cookies de medição e publicidade",
-    purpose: "Medir audiência e exibir anúncios. Nada carrega antes do seu aceite.",
+    data: "Cookie de medição",
+    purpose:
+      "Medir audiência para entender o que as pessoas procuram. Nada carrega antes do seu aceite, e não há publicidade na plataforma.",
     basis: "Consentimento (art. 7º, I)",
   },
 ];
@@ -72,7 +73,7 @@ const RIGHTS = [
 export default function PrivacyPage() {
   const controller = env.NEXT_PUBLIC_PRIVACY_CONTROLLER;
   const contact = env.NEXT_PUBLIC_PRIVACY_CONTACT;
-  const measures = isMeasurementEnabled.analytics || isMeasurementEnabled.ads;
+  const measures = isMeasurementEnabled.analytics;
 
   return (
     <div className="container-page max-w-3xl space-y-10 py-10">
@@ -178,9 +179,9 @@ export default function PrivacyPage() {
               <span aria-hidden className="mt-2 size-1.5 shrink-0 rounded-full bg-primary" />
               <span>
                 <strong>Google.</strong> Se você aceitar, dados de navegação vão para o Google
-                Analytics e para o AdSense, o que envolve{" "}
-                <strong>transferência internacional</strong> para os Estados Unidos. Recusar não
-                tira nenhuma funcionalidade, e nada carrega antes do aceite.
+                Analytics, o que envolve <strong>transferência internacional</strong> para os
+                Estados Unidos. É o único terceiro que recebe algo: não há publicidade aqui. Recusar
+                não tira nenhuma funcionalidade, e nada carrega antes do aceite.
               </span>
             </li>
           )}

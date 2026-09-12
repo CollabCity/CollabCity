@@ -45,12 +45,24 @@ export const env = createEnv({
   client: {
     NEXT_PUBLIC_APP_URL: z.url(),
     /**
-     * Medição e publicidade são opcionais: sem as variáveis, nada carrega e o
-     * banner de consentimento nem aparece. É o padrão em desenvolvimento.
+     * A medição é opcional: sem a variável, nada carrega e o banner de
+     * consentimento nem aparece. É o padrão em desenvolvimento.
      */
     NEXT_PUBLIC_GA_ID: optionalString,
-    NEXT_PUBLIC_ADSENSE_CLIENT: optionalString,
-    NEXT_PUBLIC_ADSENSE_SLOT: optionalString,
+    /**
+     * Como apoiar quem mantém esta instância.
+     *
+     * A plataforma não recebe dinheiro: ela aponta para um canal de fora, que
+     * é de quem opera a instância — o mesmo raciocínio do controlador de
+     * dados. Sem nenhuma das duas, a página `/apoie` não existe e o rodapé não
+     * a oferece.
+     *
+     * `URL` serve a qualquer canal com página própria (Ko-fi, GitHub
+     * Sponsors, Open Collective, Apoia.se); `PIX` é a chave exibida para
+     * cópia, porque no Brasil é o caminho sem taxa e sem cadastro.
+     */
+    NEXT_PUBLIC_DONATION_URL: optionalString,
+    NEXT_PUBLIC_DONATION_PIX: optionalString,
     /**
      * Quem opera esta instância, e para onde vão os pedidos de LGPD.
      *
@@ -82,8 +94,8 @@ export const env = createEnv({
     S3_PUBLIC_URL: process.env.S3_PUBLIC_URL,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     NEXT_PUBLIC_GA_ID: process.env.NEXT_PUBLIC_GA_ID,
-    NEXT_PUBLIC_ADSENSE_CLIENT: process.env.NEXT_PUBLIC_ADSENSE_CLIENT,
-    NEXT_PUBLIC_ADSENSE_SLOT: process.env.NEXT_PUBLIC_ADSENSE_SLOT,
+    NEXT_PUBLIC_DONATION_URL: process.env.NEXT_PUBLIC_DONATION_URL,
+    NEXT_PUBLIC_DONATION_PIX: process.env.NEXT_PUBLIC_DONATION_PIX,
     NEXT_PUBLIC_PRIVACY_CONTROLLER: process.env.NEXT_PUBLIC_PRIVACY_CONTROLLER,
     NEXT_PUBLIC_PRIVACY_CONTACT: process.env.NEXT_PUBLIC_PRIVACY_CONTACT,
   },
@@ -91,11 +103,15 @@ export const env = createEnv({
   skipValidation: process.env.SKIP_ENV_VALIDATION === "true",
 });
 
-/** Medição e publicidade só existem quando configuradas. */
+/** A medição só existe quando configurada. */
 export const isMeasurementEnabled = {
   analytics: Boolean(env.NEXT_PUBLIC_GA_ID),
-  ads: Boolean(env.NEXT_PUBLIC_ADSENSE_CLIENT),
 };
+
+/** O canal de doação só existe quando quem opera a instância informa o seu. */
+export const isDonationEnabled = Boolean(
+  env.NEXT_PUBLIC_DONATION_URL || env.NEXT_PUBLIC_DONATION_PIX,
+);
 
 export const isOAuthEnabled = {
   github: Boolean(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET),

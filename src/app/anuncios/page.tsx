@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { Ad } from "@/components/ads";
 import { EmptyState } from "@/components/empty-state";
 import { ListingCard } from "@/components/listing-card";
 import { SearchFilters } from "@/components/search-filters";
@@ -75,10 +74,6 @@ async function Results({ params }: { params: ReturnType<typeof parseSearchParams
           </li>
         ))}
       </ul>
-
-      {/* `intent` fecha a publicidade quando a busca está filtrada por pedidos:
-          quem procura alguém precisando de ajuda não é público de anunciante. */}
-      <Ad intent={params.intent} />
 
       {(hasPreviousPage || hasNextPage) && (
         <nav className="flex items-center justify-between" aria-label="Paginação">

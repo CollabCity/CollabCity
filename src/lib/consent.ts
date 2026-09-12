@@ -1,15 +1,13 @@
 /**
- * Consentimento para medição e publicidade.
+ * Consentimento para medição.
  *
  * O guia de cookies da ANPD admite legítimo interesse para métricas
  * anonimizadas e sem terceiros — não é o caso aqui: o Google Analytics manda
- * dados para o Google, e o AdSense usa cookies de publicidade. Com
- * compartilhamento com terceiro, o consentimento é a base segura, e por isso
- * **nada carrega antes da escolha**.
+ * dados para o Google. Com compartilhamento com terceiro, o consentimento é a
+ * base segura, e por isso **nada carrega antes da escolha**.
  *
  * A escolha vive em cookie, e não em `localStorage`, para que o servidor
- * também a enxergue: assim uma pessoa que recusou não recebe nem o espaço
- * reservado do anúncio no HTML.
+ * também a enxergue e decida o que entra no HTML.
  */
 
 export const CONSENT_COOKIE = "collabcity-consentimento";
@@ -20,6 +18,13 @@ export const CONSENT_COOKIE = "collabcity-consentimento";
  * Uma escolha feita sob outra descrição não vale para a nova: subir a versão
  * faz o banner voltar a perguntar, em vez de herdar um "sim" dado para outra
  * coisa.
+ *
+ * A retirada da publicidade (ADR-0025) **não** subiu a versão, de propósito. A
+ * regra existe para impedir que um "sim" estreito cubra uma coleta maior, e
+ * aqui a coleta encolheu: quem aceitou medição e publicidade aceitou medição, e
+ * quem recusou continua recusando. Subir só produziria uma pergunta a mais,
+ * sobre menos. Os cookies gravados na versão 1 ainda carregam uma chave `ads`,
+ * que `parseConsent` simplesmente ignora.
  */
 export const CONSENT_VERSION = 1;
 
@@ -32,20 +37,16 @@ export type Consent = {
   version: number;
   /** Medição de audiência. */
   analytics: ConsentChoice;
-  /** Publicidade e os cookies dela. */
-  ads: ConsentChoice;
 };
 
 export const ACCEPT_ALL: Consent = {
   version: CONSENT_VERSION,
   analytics: "granted",
-  ads: "granted",
 };
 
 export const REJECT_ALL: Consent = {
   version: CONSENT_VERSION,
   analytics: "denied",
-  ads: "denied",
 };
 
 /**
@@ -66,9 +67,8 @@ export function parseConsent(raw: string | null | undefined): Consent | null {
     if (value.version !== CONSENT_VERSION) return null;
 
     const analytics = value.analytics === "granted" ? "granted" : "denied";
-    const ads = value.ads === "granted" ? "granted" : "denied";
 
-    return { version: CONSENT_VERSION, analytics, ads };
+    return { version: CONSENT_VERSION, analytics };
   } catch {
     return null;
   }
@@ -81,9 +81,4 @@ export function serializeConsent(consent: Consent): string {
 /** Se a medição pode carregar. */
 export function allowsAnalytics(consent: Consent | null): boolean {
   return consent?.analytics === "granted";
-}
-
-/** Se a publicidade pode carregar. */
-export function allowsAds(consent: Consent | null): boolean {
-  return consent?.ads === "granted";
 }

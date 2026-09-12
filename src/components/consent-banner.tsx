@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { clearConsent, setConsent } from "@/server/actions/consent";
 
 /**
- * Pergunta antes de carregar medição e publicidade.
+ * Pergunta antes de carregar a medição.
  *
  * Componente de servidor: quem decide se ele aparece é o cookie lido no
  * layout, então não há piscada entre a renderização e a hidratação, e a escolha
@@ -13,13 +13,13 @@ export function ConsentBanner() {
   return (
     <div
       role="dialog"
-      aria-label="Consentimento de medição e publicidade"
+      aria-label="Consentimento de medição"
       className="fixed inset-x-0 bottom-0 z-50 border-border border-t bg-card/95 backdrop-blur"
     >
       <div className="container-page flex flex-col gap-4 py-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="max-w-2xl text-sm leading-relaxed">
-          Usamos cookies para medir a audiência e exibir publicidade, o que envolve compartilhar
-          dados com o Google. Nada disso carrega sem a sua permissão, e a plataforma funciona
+          Usamos cookies para medir a audiência, o que envolve compartilhar dados com o Google. Não
+          há publicidade aqui. Nada disso carrega sem a sua permissão, e a plataforma funciona
           inteira sem ela.{" "}
           <Link href="/privacidade" className="font-medium underline underline-offset-2">
             O que é coletado
