@@ -8,7 +8,7 @@ matá-lo.
 
 | Componente | Serviço sugerido | Camada gratuita | Alternativas |
 | --- | --- | --- | --- |
-| Aplicação | Vercel | 100 GB de banda, builds ilimitados em projetos pessoais | Netlify, Railway, Fly.io, contêiner próprio |
+| Aplicação | Vercel | 100 GB de banda; o gratuito é **só para uso não comercial** | Netlify, Railway, Fly.io, contêiner próprio |
 | Banco | Neon | 0,5 GB, PostGIS disponível, ramificação de banco | Supabase (500 MB), Aiven, Postgres próprio |
 | Imagens | Cloudflare R2 | 10 GB e sem taxa de saída | Supabase Storage, UploadThing, disco local |
 
@@ -63,6 +63,37 @@ Preencha `GITHUB_CLIENT_ID`/`GITHUB_CLIENT_SECRET` ou os equivalentes do Google.
 aplicação usa apenas e-mail e senha — a configuração é condicional em `src/lib/env.ts`.
 
 URL de callback: `https://SEU_DOMINIO/api/auth/callback/github`.
+
+## Medição (opcional)
+
+| Variável | Valor |
+| --- | --- |
+| `NEXT_PUBLIC_GA_ID` | Identificador do Google Analytics, no formato `G-...` |
+
+Ausente, nenhum script de terceiro carrega e o banner de consentimento nem aparece — é o padrão em
+desenvolvimento. Nada carrega antes do aceite de quem visita; ver
+[ADR-0022](./decisions/0022-medicao-e-publicidade-com-consentimento.md).
+
+**Não há publicidade na plataforma**, e isso é decisão, não pendência: ver
+[ADR-0025](./decisions/0025-doacao-em-vez-de-publicidade.md). Como efeito colateral, a instalação
+inteira continua cabendo no plano gratuito da Vercel, cujas
+[diretrizes de uso justo](https://vercel.com/docs/limits/fair-use-guidelines) reservam o Hobby ao
+uso não comercial e citam a exibição de anúncios como uso comercial. Se alguém reintroduzir
+anúncio, precisa reabrir a hospedagem junto.
+
+## Apoio ao projeto (opcional)
+
+| Variável | Valor |
+| --- | --- |
+| `NEXT_PUBLIC_DONATION_URL` | Página do canal de apoio — Ko-fi, GitHub Sponsors, Open Collective, Apoia.se |
+| `NEXT_PUBLIC_DONATION_PIX` | Chave Pix, exibida para cópia |
+
+Sem nenhuma das duas, a página `/apoie` responde 404 e o rodapé não a oferece: um convite a apoiar
+que leva a lugar nenhum é pior que nenhum convite. Basta uma delas para a página existir.
+
+Quem recebe é **quem opera a instância**, não o repositório — o mesmo raciocínio do controlador de
+dados. O pagamento acontece fora da aplicação, que não processa valores nem guarda dado bancário;
+as mesmas diretrizes da Vercel dizem expressamente que **doação não é uso comercial**.
 
 ## Contêiner
 

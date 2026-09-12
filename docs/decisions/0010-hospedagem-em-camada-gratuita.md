@@ -47,3 +47,11 @@ um serviço que as pessoas precisam encontrar no ar.
 - Funcionalidades que exigiriam serviço pago ficaram fora e estão registradas no
   [roteiro](../roadmap.md): envio de e-mail, Redis para limitação de taxa distribuída,
   geocodificação em escala.
+- **A [ADR-0022](./0022-medicao-e-publicidade-com-consentimento.md) rompeu a premissa desta
+  decisão, e a [ADR-0025](./0025-doacao-em-vez-de-publicidade.md) a restaurou.** O gratuito da
+  Vercel é para uso não comercial, e as
+  [diretrizes de uso justo](https://vercel.com/docs/limits/fair-use-guidelines) citam a exibição de
+  anúncios como uso comercial: adotar o AdSense tornava "camada gratuita" e "hospedar na Vercel"
+  mutuamente exclusivos. Das três saídas possíveis — abandonar a camada gratuita, abandonar a
+  Vercel ou abandonar a publicidade —, a escolhida foi a terceira, e esta ADR segue valendo inteira.
+  Doação não é uso comercial nas mesmas diretrizes.

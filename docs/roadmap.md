@@ -110,13 +110,22 @@ exclusão acontece** — a linha fica pendente e a pessoa acredita que foi exclu
 uso**, e as duas páginas seguem dizendo de si mesmas que não substituem revisão jurídica antes de
 uso comercial.
 
-### Monetização além da publicidade
+### Sustentação, depois da doação
 
-Publicidade paga por audiência, e a plataforma tem transações, não audiência: a R$ 5 por mil
-visualizações, mil reais por mês exigiriam duzentas mil visualizações. Duas alternativas de melhor
-encaixe estão desenhadas e não implementadas — **anúncio destacado**, restrito a anúncios `paid`
-para que doação nunca dispute por dinheiro, e **plano de organizações**, que já é item de produto
-aqui. Ver [ADR-0022](./decisions/0022-medicao-e-publicidade-com-consentimento.md).
+A publicidade saiu e o apoio voluntário entrou no lugar
+([ADR-0025](./decisions/0025-doacao-em-vez-de-publicidade.md)). Doação é frágil como única fonte:
+depende de boa vontade e costuma cair depois do entusiasmo inicial. Duas alternativas de melhor
+encaixe continuam desenhadas e não implementadas — **anúncio destacado**, restrito a anúncios
+`paid` para que doação nunca dispute por dinheiro, e **plano de organizações**. Nenhuma das duas é
+publicidade de terceiro, então nenhuma reabre o conflito com a hospedagem gratuita.
+
+### Quem recebe a doação não tem forma jurídica
+
+O canal de apoio aponta para uma conta de **quem opera a instância**, como pessoa física. Isso
+resolve o começo e não escala: não emite recibo, confunde dinheiro do projeto com dinheiro pessoal
+e, acima da faixa de isenção estadual, esbarra em ITCMD. Uma associação sem fins lucrativos ou um
+intermediário fiscal como o Open Collective resolveriam, ao custo de burocracia que hoje não se
+justifica. Reavaliar quando a doação virar recorrente.
 
 ## Fora de escopo
 

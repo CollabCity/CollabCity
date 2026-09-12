@@ -53,6 +53,7 @@ O que melhorou, o que piorou, e o que passou a ser obrigatório manter.
 | [0019](./0019-imagens-nos-anuncios.md) | Imagens nos anúncios | aceita |
 | [0020](./0020-suspensao-de-contas.md) | Suspensão de contas, restrita à administração | aceita |
 | [0021](./0021-contestacao-de-decisoes.md) | Contestação de decisões da moderação | aceita |
-| [0022](./0022-medicao-e-publicidade-com-consentimento.md) | Medição e publicidade com consentimento | aceita |
+| [0022](./0022-medicao-e-publicidade-com-consentimento.md) | Medição e publicidade com consentimento | parcialmente substituída pela [0025](./0025-doacao-em-vez-de-publicidade.md) |
 | [0023](./0023-exportacao-e-exclusao-de-conta.md) | Exportação e exclusão de conta | aceita |
 | [0024](./0024-prazo-de-arrependimento-e-politica-de-privacidade.md) | Prazo de arrependimento e política de privacidade | aceita |
+| [0025](./0025-doacao-em-vez-de-publicidade.md) | Doação em vez de publicidade | aceita |

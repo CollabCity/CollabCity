@@ -90,11 +90,16 @@ suspensas também saem da busca e do perfil. Ver a
 
 ## Terceiros
 
-Google Analytics e AdSense só carregam depois do consentimento de quem visita, e a escolha vive em
-cookie para que o servidor também a respeite — quem recusa não recebe nem a marcação do anúncio. A
-base legal e o desenho estão na
+O Google Analytics é o único terceiro que recebe qualquer coisa, e só carrega depois do
+consentimento de quem visita — a escolha vive em cookie para que o servidor também a respeite, e o
+script simplesmente não entra no HTML de quem recusou. A base legal e o desenho estão na
 [ADR-0022](./decisions/0022-medicao-e-publicidade-com-consentimento.md); o que é coletado está na
 página `/privacidade` do produto.
+
+**Não há publicidade**, e isso é decisão registrada na
+[ADR-0025](./decisions/0025-doacao-em-vez-de-publicidade.md): a monetização por anúncio saiu, e o
+apoio voluntário em `/apoie` tomou o lugar. O pagamento acontece fora da plataforma, que não
+processa valores nem guarda dado bancário.
 
 ## Arquivos enviados
 

@@ -1,7 +1,13 @@
 # ADR-0022: Medição e publicidade com consentimento
 
-- **Situação:** aceita
+- **Situação:** parcialmente substituída pela [ADR-0025](./0025-doacao-em-vez-de-publicidade.md)
 - **Data:** 2026-09-06
+
+> A parte de **publicidade** foi revertida: o AdSense saiu do produto, e o apoio voluntário
+> tomou o lugar dele. O que está escrito abaixo sobre o AdSense é registro do que foi decidido
+> em setembro de 2026, não descrição do sistema atual. **A medição com consentimento continua
+> valendo integralmente** — inclusive o desenho do banner, a base legal e a regra de que nada
+> carrega antes da escolha.
 
 ## Contexto
 
@@ -74,6 +80,12 @@ ajuda. Descartado.
   cabeçalhos em toda página.
 - A escolha recarrega a página, porque quem decide o que renderizar é o servidor. Sem recarregar,
   quem aceitou continuaria sem anúncios até a próxima navegação.
+- **A publicidade contradizia a [ADR-0010](./0010-hospedagem-em-camada-gratuita.md), e foi ela que
+  cedeu.** As [diretrizes de uso justo da Vercel](https://vercel.com/docs/limits/fair-use-guidelines)
+  reservam o plano Hobby ao uso não comercial e listam a exibição de anúncios — o AdSense pelo
+  nome — como uso comercial: ligar a publicidade tirava o projeto da camada gratuita que a ADR-0010
+  exige. A [ADR-0025](./0025-doacao-em-vez-de-publicidade.md) resolveu retirando o AdSense e
+  colocando doação no lugar, que as mesmas diretrizes não tratam como uso comercial.
 - **Não há política de privacidade formal.** A página `/privacidade` descreve o funcionamento e diz
   de si mesma que não substitui o documento, que precisa de revisão jurídica.
 - Faltam exportação e exclusão de conta pela interface — dois direitos da LGPD que a plataforma
